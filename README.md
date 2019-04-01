@@ -14,6 +14,12 @@ AddLogging(loggingBuilder => loggingBuilder.AddProvider(JsonLoggerProvider.Insta
 Utilize o ScopeContainer.Global.BeginScope para adicionar um escopo em todos os logs da aplicação.
 Recomenda-se utilizar Dictionary<string, object> para adicionar dados de chave e valor, por ser mais performatico na operação.
 
+Para possibilitar o compartilhamento de escopo entre resoluções de dependencia dentro do mesmo escopo, utilize o método de extensão AddSharedScopeContainer no seu ServiceCollection.
+```csharp
+public void ConfigureServices(IServiceCollection services)
+	=> services.AddSharedScopeContainer()
+```
+
 Configure o JsonLoggerProvider com o método Configure.
 
 [Para mais informações veja como utilizar o logging to Asp.Net Core.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2)
