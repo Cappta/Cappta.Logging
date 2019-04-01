@@ -24,6 +24,47 @@ Configure o JsonLoggerProvider com o método Configure.
 
 [Para mais informações veja como utilizar o logging to Asp.Net Core.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2)
 
+Código de exemplo:
+```csharp
+var serviceProvider = new ServiceCollection()
+		.AddLogging(loggingBuilder => loggingBuilder.AddProvider(JsonLoggerProvider.Instance))
+		.AddSharedScopeContainer()
+		.BuildServiceProvider();
+
+#if GRAYLOG
+	ScopeContainer.Global.BeginScope(new Dictionary<string, object>() { { "stream-key", "garbage" }, { "Host", Environment.MachineName } });
+	var apiLogService = new GrayLogService(@"http://50shades.cappta.com.br:12201", JsonSerializer.Instance);
+#elif SPLUNK
+	ScopeContainer.Global.BeginScope(new Dictionary<string, object>() { { "ProviderName", "PaymentTransactionAuditor" }, { "Host", Environment.MachineName } });
+	var apiLogService = new SplunkService(@"https://splunk.cappta.com.br:8088", "afecfb05-856f-42ef-a5f7-81d8342bf11f", JsonSerializer.Instance);
+#endif
+
+var logConverter = new LogConverter();
+var asyncLogService = new AsyncLogService(apiLogService);
+JsonLoggerProvider.Instance.Configure(logConverter, asyncLogService);
+
+var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+using (logger.BeginScope(new { Operation = "PerformAction" }))
+{
+	var user = "Arroz";
+	using (logger.BeginScope("User {User} has logged in", user))
+	{
+		var action = "Cooking Rice";
+		try
+		{
+			var logger2 = serviceProvider.GetRequiredService<ILogger<Robot>>();
+			logger.LogInformation(new EventId(1, "GenericInfo"), "User is {Action}", action);
+			Step1();
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Something is not right when {Action}", action);
+		}
+	}
+}
+Thread.Sleep(Timeout.Infinite);
+```
+
 ## Ferramentas
 1. C#
    1. Dapper
