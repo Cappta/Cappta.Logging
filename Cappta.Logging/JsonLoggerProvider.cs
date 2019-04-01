@@ -26,7 +26,7 @@ namespace Cappta.Logging
 		}
 
 		private ScopeContainerClass ScopeContainer
-			=> this.serviceProvider?.GetService<ScopeContainerClass>() ?? ScopeContainerClass.Global;
+			=> this.serviceProvider?.GetService<ScopeContainerClass>() ?? new ScopeContainerClass();
 
 		public void SetServiceProvider(IServiceProvider serviceProvider)
 			=> this.serviceProvider = serviceProvider;
