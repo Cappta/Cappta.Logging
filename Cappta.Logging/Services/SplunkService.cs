@@ -36,16 +36,11 @@ namespace Cappta.Logging.Services
 
 		public void Log(IDictionary<string, object> data) => this.Log(new JsonLog(data));
 
-		public void Log(JsonLog jsonLog) => this.Log(new JsonLog[] { jsonLog });
-
-		public void Log(IEnumerable<JsonLog> jsonLogs)
+		public void Log(JsonLog jsonLog)
 		{
 			var restRequest = new RestRequest(LOG_ENDPOINT, Method.POST);
 			restRequest.AddHeader(AUTHORIZATION_HEADER, this.authorizationHeaderValue);
-			var json = string.Join(Environment.NewLine, jsonLogs
-					.Select(jsonLog => new SplunkHecRequest(this.Host, jsonLog))
-					.Select(splunkHecRequest => this.serializer.Serialize(splunkHecRequest))
-				);
+			var json = this.serializer.Serialize(new SplunkHecRequest(this.Host, jsonLog));
 			restRequest.AddJsonBody(json);
 
 			var response = this.restClient.Execute(restRequest);
