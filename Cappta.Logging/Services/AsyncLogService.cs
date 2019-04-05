@@ -28,10 +28,15 @@ namespace Cappta.Logging.Services
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
 			this.sizeLimit = sizeLimit;
 
+			this.CreateSyncThreads(syncJobs);
+		}
+
+		private void CreateSyncThreads(int syncJobs)
+		{
 			for (var i = 0; i < syncJobs; i++)
 			{
 				var thread = new Thread(this.IndexingThreadFunc);
-				thread.Name = $"{nameof(AsyncLogService)}({logService.GetType().Name}) #{i}"; //this helps identify this thread when debugging
+				thread.Name = $"{nameof(AsyncLogService)}({this.logService.GetType().Name}) #{i}"; //this helps identify this thread when debugging
 				thread.IsBackground = true; //this means that the program can close with this thread running
 				thread.Start();
 			}
@@ -57,7 +62,9 @@ namespace Cappta.Logging.Services
 		{
 			while (this.disposing == false)
 			{
-				if (this.jsonLogQueue.TryDequeue(out var jsonLog) == false) { Thread.Sleep(IDLE_SLEEP_TIME); continue; }
+				var hasJsonLog = this.jsonLogQueue.TryDequeue(out var jsonLog);
+
+				if (hasJsonLog == false) { Thread.Sleep(IDLE_SLEEP_TIME); continue; }
 
 				try
 				{
