@@ -16,20 +16,18 @@ namespace Cappta.Logging
 		private ILogService logService;
 		private IServiceProvider serviceProvider;
 
-		public void Configure(ILogConverter logConverter, ILogService logService)
+		public void Configure(ILogConverter logConverter, ILogService logService, IServiceProvider serviceProvider = null)
 		{
 			if (this.configured) { throw new InvalidOperationException($"Cannot configure {nameof(JsonLoggerProvider)} again"); }
 
 			this.logConverter = logConverter ?? throw new ArgumentNullException(nameof(logConverter));
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.serviceProvider = serviceProvider;
 			this.configured = true;
 		}
 
 		private ScopeContainerClass ScopeContainer
 			=> this.serviceProvider?.GetService<ScopeContainerClass>() ?? new ScopeContainerClass();
-
-		public void SetServiceProvider(IServiceProvider serviceProvider)
-			=> this.serviceProvider = serviceProvider;
 
 		public ILogger CreateLogger(string categoryName)
 		{

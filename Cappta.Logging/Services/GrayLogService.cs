@@ -6,7 +6,6 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Cappta.Logging.Services
 {
@@ -24,9 +23,6 @@ namespace Cappta.Logging.Services
 			this.restClient = new RestClient(grayLogUri);
 			this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
 		}
-
-		public void Log(IEnumerable<JsonLog> jsonLogs)
-			=> Parallel.ForEach(jsonLogs, this.Log);
 
 		public void Log(JsonLog jsonLog)
 			=> this.Log(jsonLog.Data);
