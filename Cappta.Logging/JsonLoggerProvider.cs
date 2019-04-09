@@ -1,20 +1,18 @@
 ﻿using Cappta.Logging.Converters;
 using Cappta.Logging.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using ScopeContainerClass = Cappta.Logging.ScopeContainer;
 
 namespace Cappta.Logging
 {
-	public class JsonLoggerProvider : ILoggerProvider
+	public class JsonLoggerProvider : ILoggerProvider, ISupportExternalScope
 	{
-		public static JsonLoggerProvider Instance { get; } = new JsonLoggerProvider();
-
 		private bool configured = false;
 		private ILogConverter logConverter;
 		private ILogService logService;
-		private IServiceProvider serviceProvider;
+		private IExternalScopeProvider scopeProvider;
+
+		public static JsonLoggerProvider Instance { get; } = new JsonLoggerProvider();
 
 		public void Configure(ILogConverter logConverter, ILogService logService)
 		{
@@ -25,19 +23,16 @@ namespace Cappta.Logging
 			this.configured = true;
 		}
 
-		public void SetServiceProvider(IServiceProvider serviceProvider)
-			=> this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-
-		private ScopeContainerClass ScopeContainer
-			=> this.serviceProvider?.GetService<ScopeContainerClass>() ?? new ScopeContainerClass();
-
 		public ILogger CreateLogger(string categoryName)
 		{
 			if (this.configured == false) { throw new InvalidOperationException($"{nameof(JsonLoggerProvider)} has not been configured yet"); }
 
-			return new JsonLogger(categoryName, this.logConverter, this.logService, this.ScopeContainer);
+			return new JsonLogger(categoryName, this.logConverter, this.logService, this.scopeProvider);
 		}
 
 		public void Dispose() { }
+
+		public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+			=> this.scopeProvider = scopeProvider;
 	}
 }
