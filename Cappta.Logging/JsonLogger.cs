@@ -4,7 +4,6 @@ using Cappta.Logging.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Cappta.Logging
 {
@@ -13,20 +12,20 @@ namespace Cappta.Logging
 		private readonly string categoryName;
 		private readonly ILogConverter logConverter;
 		private readonly ILogService logService;
-		private readonly ScopeContainer scopeContainer;
+		private readonly IExternalScopeProvider scopeProvider;
 
-		public JsonLogger(string categoryName, ILogConverter logConverter, ILogService logService, ScopeContainer scopeContainer)
+		public JsonLogger(string categoryName, ILogConverter logConverter, ILogService logService, IExternalScopeProvider scopeProvider)
 		{
 			if (string.IsNullOrEmpty(categoryName)) { throw new ArgumentNullException(nameof(categoryName)); }
 
 			this.categoryName = categoryName;
 			this.logConverter = logConverter ?? throw new ArgumentNullException(nameof(logConverter));
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
-			this.scopeContainer = scopeContainer ?? throw new ArgumentNullException(nameof(scopeContainer));
+			this.scopeProvider = scopeProvider;
 		}
 
 		public IDisposable BeginScope<TState>(TState state)
-			=> this.scopeContainer.BeginScope(state);
+			=> this.scopeProvider.Push(state);
 
 		public bool IsEnabled(LogLevel logLevel) => true; //Do not block logs from here
 
@@ -39,15 +38,17 @@ namespace Cappta.Logging
 					{ "LogLevel", logLevel },
 					{ "Exception", this.logConverter.ConvertToLogObject(exception) }
 				};
-			log.MergeWith(this.ObjectToDict(state));
 
-			var objectScopes = this.scopeContainer.ObjectScopes;
-			log.MergeWith(objectScopes.Select(objectScope => this.ObjectToDict(objectScope.State)).ToArray());
+			this.scopeProvider.ForEachScope(this.MergeScopes, log);
+			log.MergeWith(this.ObjectToDict(state));
 
 			log.RemoveNullValues();
 			var flatLog = log.Flatten();
 			this.logService.Log(flatLog);
 		}
+
+		private void MergeScopes(object scope, IDictionary<string, object> dict)
+			=> dict.MergeWith(this.ObjectToDict(scope));
 
 		private IDictionary<string, object> ObjectToDict(object obj)
 		{

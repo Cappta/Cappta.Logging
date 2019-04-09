@@ -30,8 +30,14 @@ namespace Cappta.Logging.Extensions
 				&& value is string stringValue)
 			{
 				if (string.Equals(currentStringValue, stringValue)) { return; }
+				if (stringValue == string.Empty) { return; }
+				if (currentStringValue == string.Empty)
+				{
+					dictionary[key] = stringValue;
+					return;
+				}
 
-				dictionary[key] = $"{currentValue}{Environment.NewLine}{stringValue}";
+				dictionary[key] = $"{stringValue}{Environment.NewLine}{currentValue}";
 				return;
 			}
 
