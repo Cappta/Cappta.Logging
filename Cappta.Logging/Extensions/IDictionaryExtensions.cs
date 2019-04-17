@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -75,7 +75,8 @@ namespace Cappta.Logging.Extensions
 				{
 					subDict.RemoveNullValues();
 				}
-				else if (value is null)
+				else if (value is null || 
+					(value is string stringValue && string.IsNullOrEmpty(stringValue)))
 				{
 					dictionary.Remove(key);
 				}
