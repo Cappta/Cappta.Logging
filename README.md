@@ -1,5 +1,5 @@
 # Cappta-Logging
-SDK responsável por abstrair a entrega dos logs gerados pela sua aplicação em .Net Core para Splunk ou Graylog no formato JSON.
+SDK responsável por abstrair a entrega dos logs gerados pela sua aplicação em .Net Core para Splunk, Graylog ou ElasticSearch no formato JSON.
 
 ## Uso do Software
 Referencie o projeto como submodulo em seu projeto para possibilitar debugging quando necessario.
@@ -11,7 +11,7 @@ AddLogging(loggingBuilder => loggingBuilder.AddProvider(JsonLoggerProvider.Insta
 ```
 
 Utilize um logger no root do IServiceProvider para adicionar um escopo em todos os logs da aplicação.   
-Recomenda-se utilizar Dictionary<string, object> para adicionar dados de chave e valor, por ser mais performatico na operação.   
+Caso a performance seja relevante recomenda-se utilizar Dictionary<string, object> para adicionar dados de chave e valor, por ser mais performatico ao não utilizar reflection para extrair os campos.   
 Exemplo:
 ```csharp
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -19,8 +19,6 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 	var logger = app.ApplicationServices.GetService<ILogger<Startup>>();
 	logger.BeginScope(new { Host = Environment.MachineName });
 ```
-
-Configure o JsonLoggerProvider com o método Configure.
 
 [Para mais informações veja como utilizar o logging to Asp.Net Core.](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2)
 
@@ -31,6 +29,7 @@ Configure o JsonLoggerProvider com o método Configure.
    1. Dapper
    1. Microsoft.Extensions.DependencyInjection
    1. Microsoft.Extensions.Logging
+   1. Microsoft.NETCore.App
    1. Newtonsoft.Json
    1. RestSharp
  
