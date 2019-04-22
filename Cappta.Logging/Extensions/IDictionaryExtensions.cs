@@ -75,8 +75,7 @@ namespace Cappta.Logging.Extensions
 				{
 					subDict.RemoveNullValues();
 				}
-				else if (value is null || 
-					(value is string stringValue && string.IsNullOrEmpty(stringValue)))
+				else if (value is null || value as string == string.Empty)
 				{
 					dictionary.Remove(key);
 				}

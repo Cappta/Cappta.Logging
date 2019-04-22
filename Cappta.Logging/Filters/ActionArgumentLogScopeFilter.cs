@@ -14,7 +14,10 @@ namespace Cappta.Logging.Filters
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 		{
-			using (this.logger.BeginScope(new SortedDictionary<string, object>() { { "ActionArgument", context.ActionArguments } }))
+			var state = new SortedDictionary<string, object>() {
+				{ "ActionArgument", context.ActionArguments }
+			};
+			using (this.logger.BeginScope(state))
 			{
 				await next();
 			}

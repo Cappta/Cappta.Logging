@@ -15,7 +15,10 @@ namespace Cappta.Logging.Filters
 
 		public void OnException(ExceptionContext context)
 		{
-			using (this.logger.BeginScope(new SortedDictionary<string, object>() { { "ActionArgument", context.ModelState.ToRawValueDictionary() } }))
+			var state = new SortedDictionary<string, object>() {
+				{ "ActionArgument", context.ModelState.ToRawValueDictionary() }
+			};
+			using (this.logger.BeginScope(state))
 			{
 				context.Result = this.Handle(context);
 			}
