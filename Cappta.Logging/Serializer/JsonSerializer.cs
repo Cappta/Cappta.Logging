@@ -7,8 +7,6 @@ namespace Cappta.Logging.Serializer
 {
 	public class JsonSerializer : ISerializer
 	{
-		public static JsonSerializer Instance { get; } = new JsonSerializer();
-
 		public JsonSerializer()
 			=> this.JsonSerializerSettings = new JsonSerializerSettings()
 			{

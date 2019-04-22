@@ -75,7 +75,7 @@ namespace Cappta.Logging.Extensions
 				{
 					subDict.RemoveNullValues();
 				}
-				else if (value is null)
+				else if (value is null || value as string == string.Empty)
 				{
 					dictionary.Remove(key);
 				}
@@ -90,7 +90,8 @@ namespace Cappta.Logging.Extensions
 		{
 			foreach (var kvp in dictionary)
 			{
-				var path = basePath == null ? kvp.Key : basePath + kvp.Key;
+				var key = kvp.Key.ToTitleCase();
+				var path = basePath == null ? key : basePath + key;
 				if (kvp.Value is IDictionary<string, object> dictionaryValue)
 				{
 					foreach (var flattened in dictionaryValue.EnumerateFlatKVPs(path))

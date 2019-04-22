@@ -18,21 +18,21 @@ namespace Sample
 	{
 		static void Main(string[] args)
 		{
-			var serviceProvider = new ServiceCollection()
-				.AddLogging(loggingBuilder => loggingBuilder.AddProvider(JsonLoggerProvider.Instance))
-				.BuildServiceProvider(true);
-
 #if ElasticSearch
-			var apiLogService = new ElasticSearchLogService(@"http://scorpion-homolog.cappta.com.br:9200", "garbage", JsonSerializer.Instance);
+			var apiLogService = new ElasticSearchLogService(@"http://scorpion-homolog.cappta.com.br:9200", "garbage", new JsonSerializer());
 #elif Splunk
-			var apiLogService = new SplunkService(@"https://splunk.cappta.com.br:8088", "afecfb05-856f-42ef-a5f7-81d8342bf11f", JsonSerializer.Instance);
+			var apiLogService = new SplunkService(@"https://splunk.cappta.com.br:8088", "afecfb05-856f-42ef-a5f7-81d8342bf11f", new JsonSerializer());
 #elif GrayLog
-			var apiLogService = new GrayLogService(@"http://50shades.cappta.com.br:12201", JsonSerializer.Instance);
+			var apiLogService = new GrayLogService(@"http://50shades.cappta.com.br:12201", new JsonSerializer());
 #endif
 
 			var logConverter = new LogConverter();
 			var asyncLogService = new AsyncLogService(apiLogService);
-			JsonLoggerProvider.Instance.Configure(logConverter, asyncLogService);
+			var jsonLoggerProvider = new JsonLoggerProvider(logConverter, asyncLogService);
+
+			var serviceProvider = new ServiceCollection()
+				.AddLogging(loggingBuilder => loggingBuilder.AddProvider(jsonLoggerProvider))
+				.BuildServiceProvider(true);
 
 			var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 			logger.BeginScope("Running under {Host}", Environment.MachineName);
