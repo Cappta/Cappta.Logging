@@ -6,8 +6,9 @@ Referencie o projeto como submodulo em seu projeto para possibilitar debugging q
 
 Adicione a instância do JsonLoggerProvider como Provider do LoggingBuilder através do método ConfigureLogging para IWebHostBuilder ou AddLogging para IServiceCollection
 ```csharp
-ConfigureLogging(loggingBuilder => loggingBuilder.AddProvider(JsonLoggerProvider.Instance))
-AddLogging(loggingBuilder => loggingBuilder.AddProvider(JsonLoggerProvider.Instance))
+var jsonLoggerProvider = new JsonLoggerProvider(logConverter, logService);
+ConfigureLogging(loggingBuilder => loggingBuilder.AddProvider(jsonLoggerProvider))
+AddLogging(loggingBuilder => loggingBuilder.AddProvider(jsonLoggerProvider))
 ```
 
 Utilize um logger no root do IServiceProvider para adicionar um escopo em todos os logs da aplicação.   
