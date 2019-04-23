@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Microsoft.Extensions.Logging.Internal;
 using System;
 using System.Collections;
@@ -27,7 +27,7 @@ namespace Cappta.Logging.Converters
 				case Enum enumValue: return enumValue;
 				case Guid guid: return guid.ToString();
 				case FormattedLogValues formattedLogValues: return this.ConvertFormattedLogValues(formattedLogValues, logSerializer);
-				case IDictionary<string, object> stringObjectDictionary: return stringObjectDictionary;
+				case IDictionary<string, object> stringObjectDictionary: return this.ConvertDictionary(stringObjectDictionary, logSerializer);
 				case ILogConvertable logConvertable: return logConvertable.Convert(logSerializer);
 				case IEnumerable<KeyValuePair<string, object>> kvpEnumerable: return this.ConvertKvpEnumerable(kvpEnumerable, logSerializer);
 				case string stringValue: return stringValue;
@@ -42,6 +42,9 @@ namespace Cappta.Logging.Converters
 					return this.Reflect(obj, logSerializer);
 			}
 		}
+
+		private object ConvertDictionary(IDictionary<string, object> dictionary, ILogConverter logSerializer)
+			=> dictionary.ToDictionary(kvp => kvp.Key, kvp => logSerializer.ConvertToLogObject(kvp.Value));
 
 		private object ConvertEnumerable(IEnumerable enumerable, ILogConverter logSerializer)
 		{
