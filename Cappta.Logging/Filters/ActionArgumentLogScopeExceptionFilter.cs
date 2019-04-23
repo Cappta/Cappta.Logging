@@ -29,10 +29,10 @@ namespace Cappta.Logging.Filters
 			};
 			using (this.logger.BeginScope(state))
 			{
-				context.Result = this.Handle(context);
+				context.Result = this.Handle(context.Exception);
 			}
 		}
 
-		protected abstract IActionResult Handle(ExceptionContext context);
+		protected abstract IActionResult Handle(Exception ex);
 	}
 }
