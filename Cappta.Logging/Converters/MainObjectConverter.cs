@@ -1,4 +1,4 @@
-using Cappta.Logging.Extensions;
+﻿using Cappta.Logging.Extensions;
 using Microsoft.Extensions.Logging.Internal;
 using System;
 using System.Collections;
@@ -50,7 +50,7 @@ namespace Cappta.Logging.Converters
 		{
 			var objects = enumerable.Cast<object>();
 			var logObjects = objects.Select(o => logSerializer.ConvertToLogObject(o));
-			return new SortedDictionary<string, object>() { { "Values", logObjects.ToArray() } };
+			return logObjects.ToArray();
 		}
 
 		private object ConvertKvpEnumerable(IEnumerable<KeyValuePair<string, object>> kvpEnumerable, ILogConverter logSerializer)
