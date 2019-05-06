@@ -53,6 +53,7 @@ namespace Cappta.Logging.Services
 				{
 					this.lostLogCounter++;
 					this.SizeLimitReached?.Invoke(this.lostLogCounter);
+					return;
 				}
 			}
 			this.jsonLogQueue.Enqueue(jsonLog);
