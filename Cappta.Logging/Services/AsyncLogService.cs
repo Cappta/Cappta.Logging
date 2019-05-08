@@ -52,7 +52,11 @@ namespace Cappta.Logging.Services
 				lock (this.SizeLimitReached)
 				{
 					this.lostLogCounter++;
-					this.SizeLimitReached?.Invoke(this.lostLogCounter);
+					try
+					{
+						this.SizeLimitReached?.Invoke(this.lostLogCounter);
+					}
+					catch { /* Ignore */ }
 					return;
 				}
 			}
@@ -74,7 +78,11 @@ namespace Cappta.Logging.Services
 				catch (Exception ex)
 				{
 					this.Log(jsonLog);
-					this.Exception?.Invoke(ex);
+					try
+					{
+						this.Exception?.Invoke(ex);
+					}
+					catch { /* Ignore */ }
 				}
 			}
 		}

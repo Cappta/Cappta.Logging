@@ -90,7 +90,7 @@ namespace Cappta.Logging.Converters
 			{
 				if (kvp.Key == OriginalFormatKey) { continue; }
 
-				dict.Add(kvp.Key, kvp.Value);
+				dict.Add(kvp.Key, logSerializer.ConvertToLogObject(kvp.Value));
 			}
 
 			return dict;
