@@ -7,9 +7,10 @@ namespace Cappta.Logging
 {
 	public class JsonLoggerProvider : ILoggerProvider, ISupportExternalScope
 	{
+		private readonly ScopeProvider scopeProvider = new ScopeProvider();
+
 		private readonly ILogConverter logConverter;
 		private readonly ILogService logService;
-		private IExternalScopeProvider scopeProvider;
 
 		public JsonLoggerProvider(ILogConverter logConverter, ILogService logService)
 		{
@@ -17,12 +18,14 @@ namespace Cappta.Logging
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
 		}
 
+		public IScopeProvider ScopeProvider => this.scopeProvider;
+
 		public ILogger CreateLogger(string categoryName)
 			=> new JsonLogger(categoryName, this.logConverter, this.logService, this.scopeProvider);
 
 		public void Dispose() { }
 
-		public void SetScopeProvider(IExternalScopeProvider scopeProvider)
-			=> this.scopeProvider = scopeProvider;
+		public void SetScopeProvider(IExternalScopeProvider externalScopeProvider)
+			=> this.scopeProvider.ExternalScopeProvider = externalScopeProvider;
 	}
 }
