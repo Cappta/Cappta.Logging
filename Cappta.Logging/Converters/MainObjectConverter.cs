@@ -58,7 +58,7 @@ namespace Cappta.Logging.Converters
 			}
 			return dict;
 		}
-    
+
 		private object ConvertDictionary(IDictionary<string, object> dictionary, ILogConverter logSerializer)
 			=> dictionary.ToDictionary(kvp => kvp.Key, kvp => logSerializer.ConvertToLogObject(kvp.Value));
 
@@ -108,6 +108,7 @@ namespace Cappta.Logging.Converters
 			};
 			return dict;
 		}
+
 		private object ConvertKvpEnumerable(IEnumerable<KeyValuePair<string, object>> kvpEnumerable, ILogConverter logSerializer)
 		{
 			var kvpListDict = new SortedDictionary<string, object>();
@@ -144,6 +145,7 @@ namespace Cappta.Logging.Converters
 			if (string.IsNullOrWhiteSpace(thread.Name) == false) { dict.Add("Name", thread.Name); }
 			return dict;
 		}
+
 		private object Reflect(object obj, ILogConverter logSerializer)
 		{
 			var dict = new SortedDictionary<string, object>();
