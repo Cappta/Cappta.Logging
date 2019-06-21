@@ -13,23 +13,26 @@ namespace Cappta.Logging.Services
 
 		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromMilliseconds(100);
 
-		public Action<Exception> Exception;
-		public Action<int> SizeLimitReached;
+		public event Action<Exception> Exception;
+		public event Action<int> SizeLimitReached;
 
 		private readonly ConcurrentQueue<JsonLog> jsonLogQueue = new ConcurrentQueue<JsonLog>();
 		private readonly ILogService logService;
-		private readonly int sizeLimit;
 
 		private int lostLogCounter = 0;
 		private bool disposing = false;
 
-		public AsyncLogService(ILogService logService, int syncJobs = DEFAULT_SYNC_JOBS, int sizeLimit = DEFAULT_SIZE_LIMIT)
+		public AsyncLogService(ILogService logService, int syncJobs = DEFAULT_SYNC_JOBS, int queueCapacity = DEFAULT_SIZE_LIMIT)
 		{
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
-			this.sizeLimit = sizeLimit;
+			this.QueueCapacity = queueCapacity;
 
 			this.CreateSyncThreads(syncJobs);
 		}
+
+		public int QueueCapacity { get; }
+
+		public int QueueCount => this.jsonLogQueue.Count;
 
 		private void CreateSyncThreads(int syncJobs)
 		{
@@ -38,6 +41,7 @@ namespace Cappta.Logging.Services
 				var thread = new Thread(this.IndexingThreadFunc);
 				thread.Name = $"{nameof(AsyncLogService)}({this.logService.GetType().Name}) #{i}"; //this helps identify this thread when debugging
 				thread.IsBackground = true; //this means that the program can close with this thread running
+				thread.Priority = ThreadPriority.Lowest; //Make sure we don't interfere with actual behavior of the application
 				thread.Start();
 			}
 		}
@@ -47,7 +51,7 @@ namespace Cappta.Logging.Services
 
 		public void Log(JsonLog jsonLog)
 		{
-			if (this.jsonLogQueue.Count > this.sizeLimit)
+			if (this.QueueCount > this.QueueCapacity)
 			{
 				lock (this.SizeLimitReached)
 				{
