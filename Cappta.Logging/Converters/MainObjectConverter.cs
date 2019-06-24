@@ -128,6 +128,12 @@ namespace Cappta.Logging.Converters
 					continue;
 				}
 
+				if (kvp.Key == OriginalFormatKey)
+				{
+					kvpListDict.ForceAdd("Message", kvpEnumerable.ToString());
+					continue;
+				}
+
 				kvpListDict.ForceAdd(kvp.Key, logSerializer.ConvertToLogObject(kvp.Value));
 			}
 			return kvpListDict;
