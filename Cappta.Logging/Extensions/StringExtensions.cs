@@ -9,7 +9,7 @@
 			return char.ToLower(value[0]) + value.Substring(1);
 		}
 
-		public static string ToTitleCase(this string value)
+		public static string ToPascalCase(this string value)
 		{
 			if (char.IsUpper(value[0])) { return value; }
 

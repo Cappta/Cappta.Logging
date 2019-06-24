@@ -90,7 +90,7 @@ namespace Cappta.Logging.Extensions
 		{
 			foreach (var kvp in dictionary)
 			{
-				var key = kvp.Key.ToTitleCase();
+				var key = kvp.Key.ToPascalCase();
 				var path = basePath == null ? key : basePath + key;
 				if (kvp.Value is IDictionary<string, object> dictionaryValue)
 				{
