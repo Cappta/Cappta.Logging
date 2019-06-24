@@ -55,10 +55,10 @@ namespace Cappta.Logging.Health
 			=> new Dictionary<string, object>()
 			{
 				{nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
-				{nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
-				{nameof(asyncLogServiceWatcher.LostLogCounter), asyncLogServiceWatcher.LostLogCounter },
+				{nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
 				{nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
-				{nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount }
+				{nameof(asyncLogServiceWatcher.LostLogCounter), asyncLogServiceWatcher.LostLogCounter },
+				{nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
 			};
 	}
 }
