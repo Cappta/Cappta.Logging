@@ -54,7 +54,7 @@ namespace Cappta.Logging.Health
 		private Dictionary<string, object> GetResultData(IAsyncLogServiceWatcher asyncLogServiceWatcher, int acceptableQueueCount)
 			=> new Dictionary<string, object>()
 			{
-				{"AcceptableQueueCount", acceptableQueueCount },
+				{nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
 				{nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
 				{nameof(asyncLogServiceWatcher.LostLogCounter), asyncLogServiceWatcher.LostLogCounter },
 				{nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
