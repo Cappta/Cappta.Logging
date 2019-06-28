@@ -9,13 +9,14 @@ namespace Cappta.Logging.Health
 	{
 		private readonly AsyncLogService asyncLogService;
 		private readonly Dictionary<string, int> exceptionMessageCountDict = new Dictionary<string, int>();
+
 		public AsyncLogServiceWatcher(AsyncLogService asyncLogService)
 		{
 			this.asyncLogService = asyncLogService ?? throw new ArgumentNullException(nameof(asyncLogService));
-			this.asyncLogService.SizeLimitReached += this.OnAsyncLogServiceSizeLimitReached;
 			this.asyncLogService.Exception += this.OnAsyncLogServiceException;
 		}
 
+		public int BusyIndexerCount => this.asyncLogService.BusyIndexerCount;
 		public ReadOnlyDictionary<string, int> ExceptionMessageCountDictionary
 		{
 			get
@@ -26,10 +27,9 @@ namespace Cappta.Logging.Health
 				}
 			}
 		}
-
-		public int LostLogCounter { get; private set; }
+		public int HealthyIndexerCount => this.asyncLogService.HealthyIndexerCount;
+		public int LostLogCount => this.asyncLogService.LostLogCount;
 		public int QueueCapacity => this.asyncLogService.QueueCapacity;
-
 		public int QueueCount => this.asyncLogService.QueueCount;
 
 		private void OnAsyncLogServiceException(Exception ex)
@@ -45,8 +45,5 @@ namespace Cappta.Logging.Health
 				this.exceptionMessageCountDict.Add(ex.Message, 1);
 			}
 		}
-
-		private void OnAsyncLogServiceSizeLimitReached(int lostLogCounter)
-			=> this.LostLogCounter = lostLogCounter;
 	}
 }

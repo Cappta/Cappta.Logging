@@ -14,12 +14,13 @@ namespace Cappta.Logging.Services
 		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromMilliseconds(100);
 
 		public event Action<Exception> Exception;
-		public event Action<int> SizeLimitReached;
 
 		private readonly ConcurrentQueue<JsonLog> jsonLogQueue = new ConcurrentQueue<JsonLog>();
 		private readonly ILogService logService;
 
-		private int lostLogCounter = 0;
+		private int busyIndexerCount = 0;
+		private int healthyIndexerCount = 0;
+		private int lostLogCount = 0;
 		private bool disposing = false;
 
 		public AsyncLogService(ILogService logService, int syncJobs = DEFAULT_SYNC_JOBS, int queueCapacity = DEFAULT_SIZE_LIMIT)
@@ -30,8 +31,10 @@ namespace Cappta.Logging.Services
 			this.CreateSyncThreads(syncJobs);
 		}
 
+		public int BusyIndexerCount => this.busyIndexerCount;
+		public int HealthyIndexerCount => this.healthyIndexerCount;
+		public int LostLogCount => this.lostLogCount;
 		public int QueueCapacity { get; }
-
 		public int QueueCount => this.jsonLogQueue.Count;
 
 		private void CreateSyncThreads(int syncJobs)
@@ -53,41 +56,46 @@ namespace Cappta.Logging.Services
 		{
 			if (this.QueueCount > this.QueueCapacity)
 			{
-				lock (this.SizeLimitReached)
-				{
-					this.lostLogCounter++;
-					try
-					{
-						this.SizeLimitReached?.Invoke(this.lostLogCounter);
-					}
-					catch { /* Ignore */ }
-					return;
-				}
+				Interlocked.Increment(ref this.lostLogCount);
+				return;
 			}
 			this.jsonLogQueue.Enqueue(jsonLog);
 		}
 
 		private void IndexingThreadFunc()
 		{
-			while (this.disposing == false)
+			try
 			{
-				var hasJsonLog = this.jsonLogQueue.TryDequeue(out var jsonLog);
-
-				if (hasJsonLog == false) { Thread.Sleep(IDLE_SLEEP_TIME); continue; }
-
-				try
+				Interlocked.Increment(ref this.healthyIndexerCount);
+				Interlocked.Increment(ref this.busyIndexerCount);
+				while (this.disposing == false)
 				{
-					this.logService.Log(jsonLog);
-				}
-				catch (Exception ex)
-				{
-					this.Log(jsonLog);
+					var hasJsonLog = this.jsonLogQueue.TryDequeue(out var jsonLog);
+
+					if (hasJsonLog == false)
+					{
+						Interlocked.Decrement(ref this.busyIndexerCount);
+						Thread.Sleep(IDLE_SLEEP_TIME);
+						Interlocked.Increment(ref this.busyIndexerCount);
+						continue;
+					}
+
 					try
 					{
-						this.Exception?.Invoke(ex);
+						this.logService.Log(jsonLog);
 					}
-					catch { /* Ignore */ }
+					catch (Exception ex)
+					{
+						this.Log(jsonLog);
+						try { this.Exception?.Invoke(ex); }
+						catch { /* Ignore */ }
+					}
 				}
+			}
+			finally
+			{
+				Interlocked.Decrement(ref this.healthyIndexerCount);
+				Interlocked.Decrement(ref this.busyIndexerCount);
 			}
 		}
 

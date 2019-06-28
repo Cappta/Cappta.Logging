@@ -25,7 +25,7 @@ namespace Cappta.Logging.Health
 			var asyncLogServiceWatcher = this.serviceProvider.GetService<IAsyncLogServiceWatcher>();
 			if (asyncLogServiceWatcher == null) { return HealthCheckResult.Unhealthy($"{nameof(IAsyncLogServiceWatcher)} has not been registered into IOC"); }
 
-			var lostLogCounter = asyncLogServiceWatcher.LostLogCounter;
+			var lostLogCounter = asyncLogServiceWatcher.LostLogCount;
 			var queueCount = asyncLogServiceWatcher.QueueCount;
 			var acceptableQueueCount = asyncLogServiceWatcher.QueueCapacity / ACCEPTABLE_QUEUE_COUNT_DIVISOR;
 
@@ -57,7 +57,9 @@ namespace Cappta.Logging.Health
 				{nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
 				{nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
 				{nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
-				{nameof(asyncLogServiceWatcher.LostLogCounter), asyncLogServiceWatcher.LostLogCounter },
+				{nameof(asyncLogServiceWatcher.LostLogCount), asyncLogServiceWatcher.LostLogCount },
+				{nameof(asyncLogServiceWatcher.HealthyIndexerCount), asyncLogServiceWatcher.HealthyIndexerCount },
+				{nameof(asyncLogServiceWatcher.BusyIndexerCount), asyncLogServiceWatcher.BusyIndexerCount },
 				{nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
 			};
 	}
