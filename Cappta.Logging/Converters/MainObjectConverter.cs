@@ -38,6 +38,7 @@ namespace Cappta.Logging.Converters
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
 				case IEnumerable enumerable: return this.ConvertEnumerable(enumerable, logSerializer);
+				case IRestRequest restRequest: return this.ConvertIRestRequest(restRequest);
 				case IRestResponse restResponse: return this.ConvertIRestResponse(restResponse, logSerializer);
 				default:
 					if (obj.GetType().IsPrimitive) { return obj; }
@@ -93,6 +94,17 @@ namespace Cappta.Logging.Converters
 				dict.Add(kvp.Key, logSerializer.ConvertToLogObject(kvp.Value));
 			}
 
+			return dict;
+		}
+
+		private object ConvertIRestRequest(IRestRequest restRequest)
+		{
+			var dict = new SortedDictionary<string, object>()
+			{
+				{ "Resource", restRequest.Resource },
+				{ "Method", restRequest.Method },
+				{ "JsonBody", restRequest.Parameters.FirstOrDefault(p => p.Name == "application/json") }
+			};
 			return dict;
 		}
 
