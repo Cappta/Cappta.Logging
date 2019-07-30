@@ -38,6 +38,7 @@ namespace Cappta.Logging.Converters
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
 				case IEnumerable enumerable: return this.ConvertEnumerable(enumerable, logSerializer);
+				case IRestRequest restRequest: return this.ConvertIRestRequest(restRequest, logSerializer);
 				case IRestResponse restResponse: return this.ConvertIRestResponse(restResponse, logSerializer);
 				default:
 					if (obj.GetType().IsPrimitive) { return obj; }
@@ -96,9 +97,20 @@ namespace Cappta.Logging.Converters
 			return dict;
 		}
 
-		private object ConvertIRestResponse(IRestResponse restResponse, ILogConverter logSerializer)
+		private object ConvertIRestRequest(IRestRequest restRequest, ILogConverter logSerializer)
 		{
-			var dict = new SortedDictionary<string, object>()
+			var requestBody = restRequest.Parameters.SingleOrDefault(p => p.Type == ParameterType.RequestBody);
+
+			return new SortedDictionary<string, object>()
+			{
+				{ "Resource", restRequest.Resource },
+				{ "Method", restRequest.Method },
+				{ "Body", logSerializer.ConvertToLogObject(requestBody) }
+			};
+		}
+
+		private object ConvertIRestResponse(IRestResponse restResponse, ILogConverter logSerializer)
+			=> new SortedDictionary<string, object>()
 			{
 				{ "Status", restResponse.StatusCode },
 				{ "StatusCode", (int)restResponse.StatusCode },
@@ -106,8 +118,6 @@ namespace Cappta.Logging.Converters
 				{ "State", restResponse.ErrorMessage },
 				{ "Exception", logSerializer.ConvertToLogObject(restResponse.ErrorException) }
 			};
-			return dict;
-		}
 
 		private object ConvertKvpEnumerable(IEnumerable<KeyValuePair<string, object>> kvpEnumerable, ILogConverter logSerializer)
 		{
@@ -140,17 +150,14 @@ namespace Cappta.Logging.Converters
 		}
 
 		private object ConvertThread(Thread thread)
-		{
-			var dict = new SortedDictionary<string, object>()
+			=> new SortedDictionary<string, object>()
 			{
 				{ "IsBackground", thread.IsBackground },
 				{ "IsThreadPoolThread", thread.IsThreadPoolThread },
 				{ "Priority", thread.Priority },
 				{ "State", thread.ThreadState },
+				{ "Name", thread.Name },
 			};
-			if (string.IsNullOrWhiteSpace(thread.Name) == false) { dict.Add("Name", thread.Name); }
-			return dict;
-		}
 
 		private object Reflect(object obj, ILogConverter logSerializer)
 		{
