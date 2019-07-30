@@ -99,7 +99,7 @@ namespace Cappta.Logging.Converters
 
 		private object ConvertIRestRequest(IRestRequest restRequest, ILogConverter logSerializer)
 		{
-			var requestBody = restRequest.Parameters.FirstOrDefault(p => p.Type == ParameterType.RequestBody);
+			var requestBody = restRequest.Parameters.SingleOrDefault(p => p.Type == ParameterType.RequestBody);
 
 			return new SortedDictionary<string, object>()
 			{
