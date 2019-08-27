@@ -10,16 +10,16 @@ namespace Cappta.Logging
 	internal class JsonLogger : ILogger
 	{
 		private readonly string categoryName;
-		private readonly ILogConverter logConverter;
+		private readonly ILogConverterFactory logConverterFactory;
 		private readonly ILogService logService;
 		private readonly IExternalScopeProvider scopeProvider;
 
-		public JsonLogger(string categoryName, ILogConverter logConverter, ILogService logService, IExternalScopeProvider scopeProvider)
+		public JsonLogger(string categoryName, ILogConverterFactory logConverterFactory, ILogService logService, IExternalScopeProvider scopeProvider)
 		{
 			if (string.IsNullOrEmpty(categoryName)) { throw new ArgumentNullException(nameof(categoryName)); }
 
 			this.categoryName = categoryName;
-			this.logConverter = logConverter ?? throw new ArgumentNullException(nameof(logConverter));
+			this.logConverterFactory = logConverterFactory ?? throw new ArgumentNullException(nameof(logConverterFactory));
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
 			this.scopeProvider = scopeProvider;
 		}
@@ -31,28 +31,34 @@ namespace Cappta.Logging
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
 		{
+			var logConverter = this.logConverterFactory.Create();
+
 			var log = new SortedDictionary<string, object>()
 				{
 					{ "Category", this.categoryName },
-					{ "Event", this.logConverter.ConvertToLogObject(eventId) },
+					{ "Event", logConverter.ConvertToLogObject(eventId) },
 					{ "LogLevel", logLevel },
-					{ "Exception", this.logConverter.ConvertToLogObject(exception) }
+					{ "Exception", logConverter.ConvertToLogObject(exception) }
 				};
 
-			this.scopeProvider.ForEachScope(this.MergeScopes, log);
-			log.MergeWith(this.ObjectToDict(state));
+			this.scopeProvider.ForEachScope(
+					(scope, dict) => this.MergeScopes(logConverter, scope, dict),
+					log
+				);
+
+			log.MergeWith(this.ObjectToDict(logConverter, state));
 
 			log.RemoveNullValues();
 			var flatLog = log.Flatten();
 			this.logService.Log(flatLog);
 		}
 
-		private void MergeScopes(object scope, IDictionary<string, object> dict)
-			=> dict.MergeWith(this.ObjectToDict(scope));
+		private void MergeScopes(ILogConverter logConverter, object scope, IDictionary<string, object> dict)
+			=> dict.MergeWith(this.ObjectToDict(logConverter, scope));
 
-		private IDictionary<string, object> ObjectToDict(object obj)
+		private IDictionary<string, object> ObjectToDict(ILogConverter logConverter, object obj)
 		{
-			var logObject = this.logConverter.ConvertToLogObject(obj);
+			var logObject = logConverter.ConvertToLogObject(obj);
 			return logObject is IDictionary<string, object> dictionary
 				? dictionary
 				: new SortedDictionary<string, object>() { { obj.GetType().Name, obj } };
