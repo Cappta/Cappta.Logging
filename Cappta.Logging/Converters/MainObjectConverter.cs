@@ -179,7 +179,7 @@ namespace Cappta.Logging.Converters
 		{
 			var dict = new SortedDictionary<string, object>();
 			var objType = obj.GetType();
-			foreach (var prop in objType.GetProperties())
+			foreach (var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty))
 			{
 				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(prop.GetValue(obj)));
 			}
