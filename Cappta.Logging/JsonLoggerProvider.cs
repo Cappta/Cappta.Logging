@@ -9,19 +9,19 @@ namespace Cappta.Logging
 	{
 		private readonly ScopeProvider scopeProvider = new ScopeProvider();
 
-		private readonly ILogConverter logConverter;
+		private readonly ILogConverterFactory logConverterFactory;
 		private readonly ILogService logService;
 
-		public JsonLoggerProvider(ILogConverter logConverter, ILogService logService)
+		public JsonLoggerProvider(ILogConverterFactory logConverterFactory, ILogService logService)
 		{
-			this.logConverter = logConverter ?? throw new ArgumentNullException(nameof(logConverter));
+			this.logConverterFactory = logConverterFactory ?? throw new ArgumentNullException(nameof(logConverterFactory));
 			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
 		}
 
 		public IScopeProvider ScopeProvider => this.scopeProvider;
 
 		public ILogger CreateLogger(string categoryName)
-			=> new JsonLogger(categoryName, this.logConverter, this.logService, this.scopeProvider);
+			=> new JsonLogger(categoryName, this.logConverterFactory, this.logService, this.scopeProvider);
 
 		public void Dispose() { }
 

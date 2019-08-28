@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace Cappta.Logging.Converters
@@ -26,14 +27,16 @@ namespace Cappta.Logging.Converters
 				case DateTime dateTime: return dateTime.ToString();
 				case DateTimeOffset dateTimeOffset: return dateTimeOffset.ToString();
 				case Enum enumValue: return enumValue;
-				case Guid guid: return guid.ToString();
 				case FormattedLogValues formattedLogValues: return this.ConvertFormattedLogValues(formattedLogValues, logSerializer);
+				case Guid guid: return guid.ToString();
 				case IDictionary<string, object> stringObjectDictionary: return this.ConvertDictionary(stringObjectDictionary, logSerializer);
-				case ILogConvertable logConvertable: return logConvertable.Convert(logSerializer);
 				case IEnumerable<KeyValuePair<string, object>> kvpEnumerable: return this.ConvertKvpEnumerable(kvpEnumerable, logSerializer);
+				case ILogConvertable logConvertable: return logConvertable.Convert(logSerializer);
+				case MethodInfo methodInfo: return methodInfo.ToString();
 				case string stringValue: return stringValue;
 				case Thread thread: return this.ConvertThread(thread);
 				case TimeSpan timeSpan: return timeSpan.ToString("g", CultureInfo.InvariantCulture);
+				case Type type: return type.ToString();
 
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
