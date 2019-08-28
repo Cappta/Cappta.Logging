@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Microsoft.Extensions.Logging.Internal;
 using RestSharp;
 using System;
@@ -78,10 +78,23 @@ namespace Cappta.Logging.Converters
 			var dict = new SortedDictionary<string, object>() {
 				{ "Message", ex.Message },
 				{ "StackTrace", ex.StackTrace },
-				{ "Type", ex.GetType().FullName }
+				{ "Type", ex.GetType().FullName },
+				{ "InnerException", logSerializer.ConvertToLogObject(ex.InnerException) },
 			};
-			if (ex.InnerException != null) { dict.Add("InnerException", logSerializer.ConvertToLogObject(ex.InnerException)); }
+			this.AppendExtendedExceptionProperties(dict, ex.GetType(), ex, logSerializer);
 			return dict;
+		}
+
+		private void AppendExtendedExceptionProperties(IDictionary<string, object> dict, Type type, Exception ex, ILogConverter logSerializer)
+		{
+			if(type == typeof(Exception)) { return; }
+
+			foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.DeclaredOnly))
+			{
+				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(prop.GetValue(ex)));
+			}
+
+			this.AppendExtendedExceptionProperties(dict, type.BaseType, ex, logSerializer);
 		}
 
 		private object ConvertFormattedLogValues(FormattedLogValues formattedLogValues, ILogConverter logSerializer)
@@ -166,7 +179,7 @@ namespace Cappta.Logging.Converters
 		{
 			var dict = new SortedDictionary<string, object>();
 			var objType = obj.GetType();
-			foreach (var prop in objType.GetProperties())
+			foreach (var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty))
 			{
 				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(prop.GetValue(obj)));
 			}
