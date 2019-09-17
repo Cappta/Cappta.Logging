@@ -121,7 +121,7 @@ namespace Cappta.Logging.Converters
 			{
 				{ "Resource", restRequest.Resource },
 				{ "Method", restRequest.Method },
-				{ "Body", logSerializer.ConvertToLogObject(requestBody) }
+				{ "Body", logSerializer.ConvertToLogObject(requestBody?.Value) }
 			};
 		}
 
