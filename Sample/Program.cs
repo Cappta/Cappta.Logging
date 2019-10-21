@@ -26,9 +26,8 @@ namespace Sample
 			var apiLogService = new GrayLogService(@"http://50shades.cappta.com.br:12201", new JsonSerializer());
 #endif
 
-			var logConverter = new LogConverter();
 			var asyncLogService = new AsyncLogService(apiLogService);
-			var jsonLoggerProvider = new JsonLoggerProvider(logConverter, asyncLogService);
+			var jsonLoggerProvider = new JsonLoggerProvider(new LogConverterFactory(), asyncLogService);
 
 			var serviceProvider = new ServiceCollection()
 				.AddLogging(loggingBuilder => loggingBuilder.AddProvider(jsonLoggerProvider))
