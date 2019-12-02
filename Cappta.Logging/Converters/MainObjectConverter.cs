@@ -1,5 +1,4 @@
 using Cappta.Logging.Extensions;
-using Microsoft.Extensions.Logging.Internal;
 using RestSharp;
 using System;
 using System.Collections;
@@ -27,7 +26,6 @@ namespace Cappta.Logging.Converters
 				case DateTime dateTime: return dateTime.ToString();
 				case DateTimeOffset dateTimeOffset: return dateTimeOffset.ToString();
 				case Enum enumValue: return enumValue;
-				case FormattedLogValues formattedLogValues: return this.ConvertFormattedLogValues(formattedLogValues, logSerializer);
 				case Guid guid: return guid.ToString();
 				case IDictionary<string, object> stringObjectDictionary: return this.ConvertDictionary(stringObjectDictionary, logSerializer);
 				case IEnumerable<KeyValuePair<string, object>> kvpEnumerable: return this.ConvertKvpEnumerable(kvpEnumerable, logSerializer);
@@ -95,22 +93,6 @@ namespace Cappta.Logging.Converters
 			}
 
 			this.AppendExtendedExceptionProperties(dict, type.BaseType, ex, logSerializer);
-		}
-
-		private object ConvertFormattedLogValues(FormattedLogValues formattedLogValues, ILogConverter logSerializer)
-		{
-			var dict = new SortedDictionary<string, object>() {
-				{ "Message", formattedLogValues.ToString() }
-			};
-
-			foreach (var kvp in formattedLogValues)
-			{
-				if (kvp.Key == OriginalFormatKey) { continue; }
-
-				dict.Add(kvp.Key, logSerializer.ConvertToLogObject(kvp.Value));
-			}
-
-			return dict;
 		}
 
 		private object ConvertIRestRequest(IRestRequest restRequest, ILogConverter logSerializer)
