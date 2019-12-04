@@ -14,6 +14,8 @@ namespace Cappta.Logging.Services
 		private const string TIMESTAMP_FIELD = "@timestamp";
 		private const string TIME_FORMAT = @"yyyy-MM-ddTHH:mm:ss.fffZ";
 
+		private static readonly TimeSpan REQUEST_TIMEOUT = TimeSpan.FromSeconds(10);
+
 		private readonly RestClient restClient;
 		private readonly string resource;
 		private readonly ISerializer serializer;
@@ -26,6 +28,8 @@ namespace Cappta.Logging.Services
 			this.restClient = new RestClient(elasticSearchUri);
 			this.resource = $"{index}/default";
 			this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+
+			this.restClient.Timeout = (int)REQUEST_TIMEOUT.TotalMilliseconds;
 		}
 
 		public void Log(IDictionary<string, object> data)
