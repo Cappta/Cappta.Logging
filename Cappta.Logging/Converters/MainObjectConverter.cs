@@ -88,7 +88,7 @@ namespace Cappta.Logging.Converters
 
 		private void AppendExtendedExceptionProperties(IDictionary<string, object> dict, Type type, Exception ex, ILogConverter logSerializer)
 		{
-			if(type == typeof(Exception)) { return; }
+			if (type == typeof(Exception)) { return; }
 
 			foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.DeclaredOnly))
 			{
@@ -180,9 +180,23 @@ namespace Cappta.Logging.Converters
 			var objType = obj.GetType();
 			foreach (var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty))
 			{
-				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(prop.GetValue(obj)));
+				var value = GetPropertyValue(obj, prop);
+
+				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(value));
 			}
 			return dict;
+		}
+
+		private static object GetPropertyValue(object obj, PropertyInfo prop)
+		{
+			try
+			{
+				return prop.GetValue(obj);
+			}
+			catch(Exception ex)
+			{
+				return ex;
+			}
 		}
 	}
 }
