@@ -36,6 +36,7 @@ namespace Cappta.Logging.Converters
 				case TimeSpan timeSpan: return timeSpan.ToString("g", CultureInfo.InvariantCulture);
 				case Type type: return type.ToString();
 				case Uri uri: return uri.ToString();
+				case CancellationToken cancellationToken: return this.ConvertCancellationToken(cancellationToken);
 
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
@@ -156,6 +157,12 @@ namespace Cappta.Logging.Converters
 				{ "Priority", thread.Priority },
 				{ "State", thread.ThreadState },
 				{ "Name", thread.Name },
+			};
+
+		private object ConvertCancellationToken(CancellationToken cancellationToken)
+			=> new SortedDictionary<string, object>()
+			{
+				{ "IsCancellationRequested", cancellationToken.IsCancellationRequested },
 			};
 
 		private object Reflect(object obj, ILogConverter logSerializer)
