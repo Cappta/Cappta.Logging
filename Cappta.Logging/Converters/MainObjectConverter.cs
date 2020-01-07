@@ -41,6 +41,7 @@ namespace Cappta.Logging.Converters
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
 				case IEnumerable enumerable: return this.ConvertEnumerable(enumerable, logSerializer);
+				case IRestClient restClient: return this.ConvertIRestClient(restClient, logSerializer);
 				case IRestRequest restRequest: return this.ConvertIRestRequest(restRequest, logSerializer);
 				case IRestResponse restResponse: return this.ConvertIRestResponse(restResponse, logSerializer);
 				default:
@@ -95,6 +96,14 @@ namespace Cappta.Logging.Converters
 			}
 
 			this.AppendExtendedExceptionProperties(dict, type.BaseType, ex, logSerializer);
+		}
+
+		private object ConvertIRestClient(IRestClient restClient, ILogConverter logSerializer)
+		{
+			return new SortedDictionary<string, object>()
+			{
+				{ "BaseUri", restClient.BaseUrl}
+			};
 		}
 
 		private object ConvertIRestRequest(IRestRequest restRequest, ILogConverter logSerializer)
