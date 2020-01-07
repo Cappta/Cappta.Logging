@@ -35,6 +35,7 @@ namespace Cappta.Logging.Converters
 				case Thread thread: return this.ConvertThread(thread);
 				case TimeSpan timeSpan: return timeSpan.ToString("g", CultureInfo.InvariantCulture);
 				case Type type: return type.ToString();
+				case Uri uri: return uri.ToString();
 
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
