@@ -8,7 +8,7 @@ namespace Cappta.Logging.Converters
 		private readonly IObjectConverter[] objectSerializers;
 
 		public LogConverterFactory(
-			int maxDepth = 5,
+			int maxDepth = 15,
 			params IObjectConverter[] objectSerializers)
 		{
 			this.maxDepth = maxDepth;
