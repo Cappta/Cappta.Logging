@@ -70,8 +70,8 @@ namespace Cappta.Logging.Converters
 		private object ConvertEnumerable(IEnumerable enumerable, ILogConverter logSerializer)
 		{
 			var objects = enumerable.Cast<object>();
-			var logObjects = objects.Select(o => logSerializer.ConvertToLogObject(o));
-			return logObjects.ToArray();
+			var logObjects = objects.Select((obj, index) => (obj: logSerializer.ConvertToLogObject(obj), index));
+			return logObjects.ToDictionary(tuple => tuple.index.ToString(), tuple => tuple.obj);
 		}
 
 		private object ConvertException(Exception ex, ILogConverter logSerializer)
@@ -193,7 +193,7 @@ namespace Cappta.Logging.Converters
 			{
 				return prop.GetValue(obj);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				return ex;
 			}
