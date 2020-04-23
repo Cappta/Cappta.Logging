@@ -20,15 +20,16 @@ namespace Cappta.Logging.Services
 		private readonly string resource;
 		private readonly ISerializer serializer;
 
-		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer)
+		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string token = null)
 		{
 			if (string.IsNullOrWhiteSpace(elasticSearchUri)) { throw new ArgumentNullException(nameof(elasticSearchUri)); }
 			if (string.IsNullOrEmpty(index)) { throw new ArgumentNullException(nameof(index)); }
 
 			this.restClient = new RestClient(elasticSearchUri);
+			if (string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
+
 			this.resource = $"{index}/default";
 			this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-
 			this.restClient.Timeout = (int)REQUEST_TIMEOUT.TotalMilliseconds;
 		}
 
