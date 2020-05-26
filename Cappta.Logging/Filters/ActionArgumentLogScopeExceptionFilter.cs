@@ -24,7 +24,7 @@ namespace Cappta.Logging.Filters
 
 		public void OnException(ExceptionContext context)
 		{
-			var state = new SortedDictionary<string, object>() {
+			var state = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) {
 				{ "ActionArgument", this.actionArguments }
 			};
 			using (this.logger.BeginScope(state))

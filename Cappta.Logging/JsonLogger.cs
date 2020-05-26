@@ -33,7 +33,7 @@ namespace Cappta.Logging
 		{
 			var logConverter = this.logConverterFactory.Create();
 
-			var log = new SortedDictionary<string, object>()
+			var log = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 				{
 					{ "Category", this.categoryName },
 					{ "Event", logConverter.ConvertToLogObject(eventId) },
@@ -61,7 +61,7 @@ namespace Cappta.Logging
 			var logObject = logConverter.ConvertToLogObject(obj);
 			return logObject is IDictionary<string, object> dictionary
 				? dictionary
-				: new SortedDictionary<string, object>() { { obj.GetType().Name, obj } };
+				: new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { obj.GetType().Name, obj } };
 		}
 	}
 }

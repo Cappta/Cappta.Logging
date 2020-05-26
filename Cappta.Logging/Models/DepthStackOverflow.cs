@@ -13,7 +13,7 @@ namespace Cappta.Logging.Models.Exceptions
 		public Type[] Types { get; }
 
 		public object Convert(ILogConverter logSerializer)
-			=> new SortedDictionary<string, object>()
+			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ nameof(DepthStackOverflow), this.GetTypesLogObject() },
 			};

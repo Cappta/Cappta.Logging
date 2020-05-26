@@ -10,7 +10,7 @@ namespace Cappta.Logging.Extensions
 		{
 			if (dictionary.ContainsKey(key)) { return dictionary[key] as IDictionary<string, object>; }
 
-			var subDict = new SortedDictionary<string, object>();
+			var subDict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 			dictionary.Add(key, subDict);
 			return subDict;
 		}

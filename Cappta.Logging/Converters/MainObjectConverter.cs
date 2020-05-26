@@ -53,6 +53,7 @@ namespace Cappta.Logging.Converters
 		private object ConvertAggregateException(AggregateException aggregateException, ILogConverter logSerializer)
 		{
 			var dict = new SortedDictionary<string, object>() {
+			var dict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) {
 				{ "StackTrace", aggregateException.StackTrace },
 				{ "Type", aggregateException.GetType().FullName },
 				{ "InnerException", logSerializer.ConvertToLogObject(aggregateException.InnerException) },
@@ -76,7 +77,7 @@ namespace Cappta.Logging.Converters
 
 		private object ConvertException(Exception ex, ILogConverter logSerializer)
 		{
-			var dict = new SortedDictionary<string, object>() {
+			var dict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) {
 				{ "Message", ex.Message },
 				{ "StackTrace", ex.StackTrace },
 				{ "Type", ex.GetType().FullName },
@@ -100,7 +101,7 @@ namespace Cappta.Logging.Converters
 
 		private object ConvertIRestClient(IRestClient restClient, ILogConverter logSerializer)
 		{
-			return new SortedDictionary<string, object>()
+			return new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "BaseUri", restClient.BaseUrl}
 			};
@@ -110,7 +111,7 @@ namespace Cappta.Logging.Converters
 		{
 			var requestBody = restRequest.Parameters.SingleOrDefault(p => p.Type == ParameterType.RequestBody);
 
-			return new SortedDictionary<string, object>()
+			return new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "Resource", restRequest.Resource },
 				{ "Method", restRequest.Method },
@@ -119,7 +120,7 @@ namespace Cappta.Logging.Converters
 		}
 
 		private object ConvertIRestResponse(IRestResponse restResponse, ILogConverter logSerializer)
-			=> new SortedDictionary<string, object>()
+			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "Status", restResponse.StatusCode },
 				{ "StatusCode", (int)restResponse.StatusCode },
@@ -130,7 +131,7 @@ namespace Cappta.Logging.Converters
 
 		private object ConvertKvpEnumerable(IEnumerable<KeyValuePair<string, object>> kvpEnumerable, ILogConverter logSerializer)
 		{
-			var kvpListDict = new SortedDictionary<string, object>();
+			var kvpListDict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 			foreach (var kvp in kvpEnumerable)
 			{
 				if (kvp.Key.Contains("."))
@@ -159,7 +160,7 @@ namespace Cappta.Logging.Converters
 		}
 
 		private object ConvertThread(Thread thread)
-			=> new SortedDictionary<string, object>()
+			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "IsBackground", thread.IsBackground },
 				{ "IsThreadPoolThread", thread.IsThreadPoolThread },
@@ -169,14 +170,14 @@ namespace Cappta.Logging.Converters
 			};
 
 		private object ConvertCancellationToken(CancellationToken cancellationToken)
-			=> new SortedDictionary<string, object>()
+			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "IsCancellationRequested", cancellationToken.IsCancellationRequested },
 			};
 
 		private object Reflect(object obj, ILogConverter logSerializer)
 		{
-			var dict = new SortedDictionary<string, object>();
+			var dict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 			var objType = obj.GetType();
 			foreach (var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty))
 			{
