@@ -52,7 +52,6 @@ namespace Cappta.Logging.Converters
 
 		private object ConvertAggregateException(AggregateException aggregateException, ILogConverter logSerializer)
 		{
-			var dict = new SortedDictionary<string, object>() {
 			var dict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) {
 				{ "StackTrace", aggregateException.StackTrace },
 				{ "Type", aggregateException.GetType().FullName },
