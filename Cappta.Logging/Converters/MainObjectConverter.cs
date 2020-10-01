@@ -99,12 +99,10 @@ namespace Cappta.Logging.Converters
 		}
 
 		private object ConvertIRestClient(IRestClient restClient, ILogConverter logSerializer)
-		{
-			return new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "BaseUri", restClient.BaseUrl}
 			};
-		}
 
 		private object ConvertIRestRequest(IRestRequest restRequest, ILogConverter logSerializer)
 		{
@@ -121,11 +119,12 @@ namespace Cappta.Logging.Converters
 		private object ConvertIRestResponse(IRestResponse restResponse, ILogConverter logSerializer)
 			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
+				{ "Content", restResponse.Content },
+				{ "Exception", logSerializer.ConvertToLogObject(restResponse.ErrorException) },
+				{ "Header", logSerializer.ConvertToLogObject(restResponse.Headers.ToDictionary(p => p.Name, p => p.Value)) },
+				{ "State", restResponse.ErrorMessage },
 				{ "Status", restResponse.StatusCode },
 				{ "StatusCode", (int)restResponse.StatusCode },
-				{ "Content", restResponse.Content },
-				{ "State", restResponse.ErrorMessage },
-				{ "Exception", logSerializer.ConvertToLogObject(restResponse.ErrorException) }
 			};
 
 		private object ConvertKvpEnumerable(IEnumerable<KeyValuePair<string, object>> kvpEnumerable, ILogConverter logSerializer)
