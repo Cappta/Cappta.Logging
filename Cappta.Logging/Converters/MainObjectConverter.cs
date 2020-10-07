@@ -1,4 +1,5 @@
 using Cappta.Logging.Extensions;
+using Microsoft.Extensions.Primitives;
 using RestSharp;
 using System;
 using System.Collections;
@@ -28,6 +29,7 @@ namespace Cappta.Logging.Converters
 				case Enum enumValue: return enumValue;
 				case Guid guid: return guid.ToString();
 				case IDictionary<string, object> stringObjectDictionary: return this.ConvertDictionary(stringObjectDictionary, logSerializer);
+				case IDictionary<string, StringValues> stringStringValuesDictionary: return this.ConvertStringStringValuesDictionary(stringStringValuesDictionary);
 				case IEnumerable<KeyValuePair<string, object>> kvpEnumerable: return this.ConvertKvpEnumerable(kvpEnumerable, logSerializer);
 				case ILogConvertable logConvertable: return logConvertable.Convert(logSerializer);
 				case MethodInfo methodInfo: return methodInfo.ToString();
@@ -66,6 +68,20 @@ namespace Cappta.Logging.Converters
 
 		private object ConvertDictionary(IDictionary<string, object> dictionary, ILogConverter logSerializer)
 			=> dictionary.ToDictionary(kvp => kvp.Key, kvp => logSerializer.ConvertToLogObject(kvp.Value));
+
+		private object ConvertStringStringValuesDictionary(IDictionary<string, StringValues> dictionary)
+		{
+			var dict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+			foreach(var kvp in dictionary)
+			{
+				var key = kvp.Key;
+				foreach(var value in kvp.Value)
+				{
+					dict.ForceAdd(key, value);
+				}
+			}
+			return dict;
+		}
 
 		private object ConvertEnumerable(IEnumerable enumerable, ILogConverter logSerializer)
 		{
