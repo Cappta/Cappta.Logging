@@ -1,3 +1,4 @@
+﻿using Cappta.Logging.Models;
 using Cappta.Logging.Services;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,12 @@ namespace Cappta.Logging.Health
 	{
 		private readonly AsyncLogService asyncLogService;
 		private readonly Dictionary<string, int> exceptionMessageCountDict = new Dictionary<string, int>();
+		private readonly ConcurrentHashSet<int> failingHashSet = new ConcurrentHashSet<int>();
 
 		public AsyncLogServiceWatcher(AsyncLogService asyncLogService)
 		{
 			this.asyncLogService = asyncLogService;
+			this.asyncLogService.Success += this.OnAsyncLogServiceSuccess;
 			this.asyncLogService.Exception += this.OnAsyncLogServiceException;
 		}
 
@@ -31,9 +34,15 @@ namespace Cappta.Logging.Health
 		public int LostLogCount => this.asyncLogService.LostLogCount;
 		public int QueueCapacity => this.asyncLogService.QueueCapacity;
 		public int QueueCount => this.asyncLogService.QueueCount;
+		public int RetryQueueCount => this.asyncLogService.RetryQueueCount;
+		public int PendingRetryCount => this.failingHashSet.Count;
 
-		private void OnAsyncLogServiceException(Exception ex)
+		private void OnAsyncLogServiceSuccess(int hashCode)
+			=> this.failingHashSet.Remove(hashCode);
+
+		private void OnAsyncLogServiceException(int hashCode, Exception ex)
 		{
+			this.failingHashSet.Add(hashCode);
 			lock (this.exceptionMessageCountDict)
 			{
 				if (this.exceptionMessageCountDict.ContainsKey(ex.Message))
