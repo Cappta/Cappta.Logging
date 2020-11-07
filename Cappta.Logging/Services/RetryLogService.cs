@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Models;
+using Cappta.Logging.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ namespace Cappta.Logging.Services
 			this.timeout = timeout;
 		}
 
-		public void Log(IDictionary<string, object> data)
+		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog)

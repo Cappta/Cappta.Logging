@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Converters;
+using Cappta.Logging.Converters;
 using Cappta.Logging.Extensions;
 using Cappta.Logging.Services;
 using Microsoft.Extensions.Logging;
@@ -33,7 +33,7 @@ namespace Cappta.Logging
 		{
 			var logConverter = this.logConverterFactory.Create();
 
-			var log = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+			var log = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 				{
 					{ "Category", this.categoryName },
 					{ "Event", logConverter.ConvertToLogObject(eventId) },
@@ -53,15 +53,17 @@ namespace Cappta.Logging
 			this.logService.Log(flatLog);
 		}
 
-		private void MergeScopes(ILogConverter logConverter, object scope, IDictionary<string, object> dict)
+		private void MergeScopes(ILogConverter logConverter, object scope, IDictionary<string, object?> dict)
 			=> dict.MergeWith(this.ObjectToDict(logConverter, scope));
 
-		private IDictionary<string, object> ObjectToDict(ILogConverter logConverter, object obj)
+		private IDictionary<string, object?> ObjectToDict(ILogConverter logConverter, object? obj)
 		{
 			var logObject = logConverter.ConvertToLogObject(obj);
-			return logObject is IDictionary<string, object> dictionary
-				? dictionary
-				: new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) { { obj.GetType().Name, obj } };
+
+			if (logObject is IDictionary<string, object?> dict) { return dict; }
+			if (obj is null) { return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase); }
+
+			return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) { { obj.GetType().Name, obj } };
 		}
 	}
 }

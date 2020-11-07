@@ -21,11 +21,12 @@ namespace Cappta.Logging.Converters
 			this.objectSerializers.AddRange(objectSerializers);
 		}
 
-		public object ConvertToLogObject(object obj)
+		public object? ConvertToLogObject(object? obj)
 		{
+			if (obj is null) { return null; }
 			try
 			{
-				this.typeStack.Push(obj?.GetType());
+				this.typeStack.Push(obj.GetType());
 
 				if (this.typeStack.Count > this.maxDepth) { obj = new DepthStackOverflow(this.typeStack.ToArray()); }
 

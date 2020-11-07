@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
@@ -33,7 +33,7 @@ namespace Cappta.Logging.Services
 			this.restClient.Timeout = (int)REQUEST_TIMEOUT.TotalMilliseconds;
 		}
 
-		public void Log(IDictionary<string, object> data)
+		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog)

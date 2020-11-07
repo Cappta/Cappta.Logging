@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Models;
+using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
 using Newtonsoft.Json;
@@ -34,7 +34,7 @@ namespace Cappta.Logging.Services
 
 		private string Host => Environment.MachineName;
 
-		public void Log(IDictionary<string, object> data) => this.Log(new JsonLog(data));
+		public void Log(IDictionary<string, object?> data) => this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog)
 		{

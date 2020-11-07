@@ -2,6 +2,6 @@
 {
 	public interface ILogConverter
 	{
-		object ConvertToLogObject(object obj);
+		object? ConvertToLogObject(object? obj);
 	}
 }

@@ -10,7 +10,7 @@ namespace Cappta.Logging
 	{
 		private readonly List<Scope> scopes = new List<Scope>();
 
-		internal IExternalScopeProvider ExternalScopeProvider { get; set; }
+		internal IExternalScopeProvider? ExternalScopeProvider { get; set; }
 
 		public void ForEachScope<TState>(Action<object, TState> callback, TState state)
 		{

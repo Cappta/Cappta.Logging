@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
@@ -27,7 +27,7 @@ namespace Cappta.Logging.Services
 		public void Log(JsonLog jsonLog)
 			=> this.Log(jsonLog.Data);
 
-		public void Log(IDictionary<string, object> data)
+		public void Log(IDictionary<string, object?> data)
 		{
 			var camelCaseData = data.ToDictionary(kvp => kvp.Key.ToCamelCase(), kvp => kvp.Value);
 

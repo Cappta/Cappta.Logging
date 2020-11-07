@@ -6,6 +6,6 @@ namespace Cappta.Logging.Services
 	public interface ILogService
 	{
 		void Log(JsonLog jsonLog);
-		void Log(IDictionary<string, object> data);
+		void Log(IDictionary<string, object?> data);
 	}
 }

@@ -6,22 +6,27 @@ namespace Cappta.Logging.Extensions
 {
 	public static class IDictionaryExtensions
 	{
-		public static IDictionary<string, object> CreateOrGetSubDict(this IDictionary<string, object> dictionary, string key)
+		public static IDictionary<string, object?> CreateOrGetSubDict(this IDictionary<string, object?> dictionary, string key)
 		{
-			if (dictionary.ContainsKey(key)) { return dictionary[key] as IDictionary<string, object>; }
+			if (dictionary.ContainsKey(key))
+			{
+				return dictionary[key] as IDictionary<string, object?>
+					?? throw new InvalidOperationException(
+						$"Key {key} of dictionary contains an object of type {dictionary[key]?.GetType()} which is not an {nameof(IDictionary<string, object?>)}");
+			}
 
-			var subDict = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+			var subDict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 			dictionary.Add(key, subDict);
 			return subDict;
 		}
 
-		public static void ForceAdd(this IDictionary<string, object> dictionary, string key, object value)
+		public static void ForceAdd(this IDictionary<string, object?> dictionary, string key, object? value)
 		{
 			if (dictionary.TryAdd(key, value)) { return; }
 
 			var currentValue = dictionary[key];
-			if (currentValue is IDictionary<string, object> currentDictionaryValue
-				&& value is IDictionary<string, object> dictionaryValue)
+			if (currentValue is IDictionary<string, object?> currentDictionaryValue
+				&& value is IDictionary<string, object?> dictionaryValue)
 			{
 				currentDictionaryValue.MergeWith(dictionaryValue);
 				return;
@@ -55,7 +60,7 @@ namespace Cappta.Logging.Extensions
 			catch { return false; }
 		}
 
-		public static void MergeWith(this IDictionary<string, object> baseDictionary, params IDictionary<string, object>[] incomingDictionaries)
+		public static void MergeWith(this IDictionary<string, object?> baseDictionary, params IDictionary<string, object?>[] incomingDictionaries)
 		{
 			foreach (var incomingDictionary in incomingDictionaries)
 			{
@@ -66,12 +71,12 @@ namespace Cappta.Logging.Extensions
 			}
 		}
 
-		public static void RemoveNullValues(this IDictionary<string, object> dictionary)
+		public static void RemoveNullValues(this IDictionary<string, object?> dictionary)
 		{
 			foreach (var key in dictionary.Keys.ToArray())
 			{
 				var value = dictionary[key];
-				if (value is IDictionary<string, object> subDict)
+				if (value is IDictionary<string, object?> subDict)
 				{
 					subDict.RemoveNullValues();
 				}
@@ -82,17 +87,17 @@ namespace Cappta.Logging.Extensions
 			}
 		}
 
-		public static IDictionary<string, object> Flatten(this IDictionary<string, object> dictionary)
+		public static IDictionary<string, object?> Flatten(this IDictionary<string, object?> dictionary)
 			=> dictionary.EnumerateFlatKVPs(null)
 				.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-		private static IEnumerable<KeyValuePair<string, object>> EnumerateFlatKVPs(this IDictionary<string, object> dictionary, string basePath)
+		private static IEnumerable<KeyValuePair<string, object?>> EnumerateFlatKVPs(this IDictionary<string, object?> dictionary, string? basePath)
 		{
 			foreach (var kvp in dictionary)
 			{
 				var key = kvp.Key.ToPascalCase();
-				var path = basePath == null ? key : basePath + key;
-				if (kvp.Value is IDictionary<string, object> dictionaryValue)
+				var path = basePath + key;
+				if (kvp.Value is IDictionary<string, object?> dictionaryValue)
 				{
 					foreach (var flattened in dictionaryValue.EnumerateFlatKVPs(path))
 					{
@@ -101,7 +106,7 @@ namespace Cappta.Logging.Extensions
 					continue;
 				}
 
-				yield return new KeyValuePair<string, object>(path, kvp.Value);
+				yield return new KeyValuePair<string, object?>(path, kvp.Value);
 			}
 		}
 	}
