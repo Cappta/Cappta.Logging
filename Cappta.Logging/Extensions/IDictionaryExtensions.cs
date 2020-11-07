@@ -25,16 +25,21 @@ namespace Cappta.Logging.Extensions
 			if (dictionary.TryAdd(key, value)) { return; }
 
 			var currentValue = dictionary[key];
+			if (currentValue is null)
+			{
+				dictionary[key] = value;
+				return;
+			}
 			if (currentValue is IDictionary<string, object?> currentDictionaryValue
 				&& value is IDictionary<string, object?> dictionaryValue)
 			{
 				currentDictionaryValue.MergeWith(dictionaryValue);
 				return;
 			}
+			if (currentValue.Equals(value)) { return; }
 			if (currentValue is string currentStringValue
 				&& value is string stringValue)
 			{
-				if (string.Equals(currentStringValue, stringValue)) { return; }
 				if (stringValue == string.Empty) { return; }
 				if (currentStringValue == string.Empty)
 				{
@@ -88,8 +93,14 @@ namespace Cappta.Logging.Extensions
 		}
 
 		public static IDictionary<string, object?> Flatten(this IDictionary<string, object?> dictionary)
-			=> dictionary.EnumerateFlatKVPs(null)
-				.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+		{
+			var dict = new SortedDictionary<string, object?>();
+			foreach (var kvp in dictionary.EnumerateFlatKVPs(null))
+			{
+				dict.ForceAdd(kvp.Key, kvp.Value);
+			}
+			return dict;
+		}
 
 		private static IEnumerable<KeyValuePair<string, object?>> EnumerateFlatKVPs(this IDictionary<string, object?> dictionary, string? basePath)
 		{
