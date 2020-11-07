@@ -7,11 +7,8 @@ namespace Cappta.Logging.Models
 	{
 		private static readonly DateTimeOffset UNIX_EPOCH = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-		public SplunkHecRequest() { }
 		public SplunkHecRequest(string host, JsonLog entry)
 		{
-			if (string.IsNullOrWhiteSpace(host)) { throw new ArgumentNullException(nameof(host)); }
-
 			this.Time = (entry.Time - UNIX_EPOCH).TotalSeconds;
 			this.Host = host;
 			this.Event = entry.Data;

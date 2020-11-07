@@ -1,4 +1,4 @@
-using Cappta.Logging.Converters;
+﻿using Cappta.Logging.Converters;
 using Cappta.Logging.Extensions;
 using Cappta.Logging.Services;
 using Microsoft.Extensions.Logging;
@@ -16,11 +16,9 @@ namespace Cappta.Logging
 
 		public JsonLogger(string categoryName, ILogConverterFactory logConverterFactory, ILogService logService, IExternalScopeProvider scopeProvider)
 		{
-			if (string.IsNullOrEmpty(categoryName)) { throw new ArgumentNullException(nameof(categoryName)); }
-
 			this.categoryName = categoryName;
-			this.logConverterFactory = logConverterFactory ?? throw new ArgumentNullException(nameof(logConverterFactory));
-			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.logConverterFactory = logConverterFactory;
+			this.logService = logService;
 			this.scopeProvider = scopeProvider;
 		}
 

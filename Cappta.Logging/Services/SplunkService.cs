@@ -1,4 +1,4 @@
-using Cappta.Logging.Models;
+﻿using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
 using Newtonsoft.Json;
@@ -22,15 +22,10 @@ namespace Cappta.Logging.Services
 
 		public SplunkService(string splunkUri, string token, ISerializer serializer)
 		{
-			if (string.IsNullOrWhiteSpace(splunkUri)) { throw new ArgumentNullException(nameof(splunkUri)); }
-			if (string.IsNullOrWhiteSpace(token)) { throw new ArgumentNullException(nameof(token)); }
-
 			this.restClient = new RestClient(splunkUri);
 			this.authorizationHeaderValue = AUTHORIZATION_HEADER_VALUE_PREFIX + token;
-			this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+			this.serializer = serializer;
 		}
-
-		public JsonSerializerSettings JsonSerializerSettings { get; }
 
 		private string Host => Environment.MachineName;
 

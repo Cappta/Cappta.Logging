@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Cappta.Logging.Models
@@ -8,7 +8,7 @@ namespace Cappta.Logging.Models
 		public JsonLog(IDictionary<string, object?> data) : this(data, DateTimeOffset.Now) { }
 		public JsonLog(IDictionary<string, object?> data, DateTimeOffset time)
 		{
-			this.Data = data ?? throw new ArgumentNullException(nameof(data)); ;
+			this.Data = data;
 			this.Time = time;
 		}
 

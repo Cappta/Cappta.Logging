@@ -1,4 +1,4 @@
-using Cappta.Logging.Models;
+﻿using Cappta.Logging.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ namespace Cappta.Logging.Services
 
 		public RetryLogService(ILogService logService, TimeSpan timeout)
 		{
-			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.logService = logService;
 			this.timeout = timeout;
 		}
 

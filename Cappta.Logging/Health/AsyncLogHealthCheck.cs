@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -15,7 +15,7 @@ namespace Cappta.Logging.Health
 		private readonly IServiceProvider serviceProvider;
 
 		public AsyncLogHealthCheck(IServiceProvider serviceProvider)
-			=> this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			=> this.serviceProvider = serviceProvider;
 
 		public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
 			=> await Task.FromResult(this.CheckHealth());

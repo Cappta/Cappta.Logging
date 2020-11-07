@@ -1,7 +1,6 @@
 ﻿using Cappta.Logging.Converters;
 using Cappta.Logging.Services;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace Cappta.Logging
 {
@@ -14,8 +13,8 @@ namespace Cappta.Logging
 
 		public JsonLoggerProvider(ILogConverterFactory logConverterFactory, ILogService logService)
 		{
-			this.logConverterFactory = logConverterFactory ?? throw new ArgumentNullException(nameof(logConverterFactory));
-			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.logConverterFactory = logConverterFactory;
+			this.logService = logService;
 		}
 
 		public IScopeProvider ScopeProvider => this.scopeProvider;

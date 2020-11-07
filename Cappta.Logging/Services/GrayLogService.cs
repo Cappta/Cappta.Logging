@@ -1,4 +1,4 @@
-using Cappta.Logging.Extensions;
+﻿using Cappta.Logging.Extensions;
 using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
@@ -18,10 +18,8 @@ namespace Cappta.Logging.Services
 
 		public GrayLogService(string grayLogUri, ISerializer serializer)
 		{
-			if (string.IsNullOrWhiteSpace(grayLogUri)) { throw new ArgumentNullException(nameof(grayLogUri)); }
-
 			this.restClient = new RestClient(grayLogUri);
-			this.serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+			this.serializer = serializer;
 		}
 
 		public void Log(JsonLog jsonLog)

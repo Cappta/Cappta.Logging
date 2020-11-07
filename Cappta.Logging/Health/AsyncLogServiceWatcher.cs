@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Services;
+using Cappta.Logging.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +12,7 @@ namespace Cappta.Logging.Health
 
 		public AsyncLogServiceWatcher(AsyncLogService asyncLogService)
 		{
-			this.asyncLogService = asyncLogService ?? throw new ArgumentNullException(nameof(asyncLogService));
+			this.asyncLogService = asyncLogService;
 			this.asyncLogService.Exception += this.OnAsyncLogServiceException;
 		}
 

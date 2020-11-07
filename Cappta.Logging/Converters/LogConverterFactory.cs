@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Cappta.Logging.Converters
+﻿namespace Cappta.Logging.Converters
 {
 	public class LogConverterFactory : ILogConverterFactory
 	{
@@ -12,7 +10,7 @@ namespace Cappta.Logging.Converters
 			params IObjectConverter[] objectSerializers)
 		{
 			this.maxDepth = maxDepth;
-			this.objectSerializers = objectSerializers ?? throw new ArgumentNullException(nameof(objectSerializers));
+			this.objectSerializers = objectSerializers;
 		}
 
 		public ILogConverter Create()

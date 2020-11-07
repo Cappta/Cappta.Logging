@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Models;
+using Cappta.Logging.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -25,7 +25,7 @@ namespace Cappta.Logging.Services
 
 		public AsyncLogService(ILogService logService, int syncJobs = DEFAULT_SYNC_JOBS, int queueCapacity = DEFAULT_SIZE_LIMIT)
 		{
-			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.logService = logService;
 			this.QueueCapacity = queueCapacity;
 
 			this.CreateSyncThreads(syncJobs);
