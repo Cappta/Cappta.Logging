@@ -21,7 +21,7 @@ namespace Cappta.Logging.Models.Exceptions
 		public HttpStatusCode HttpStatusCode { get; }
 
 		public object Convert(ILogConverter logSerializer)
-			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) {
+			=> new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
 				{ "HttpStatusCode", this.HttpStatusCode },
 				{ "InnerException", logSerializer.ConvertToLogObject(this.InnerException) },
 				{ "Message", this.Message },

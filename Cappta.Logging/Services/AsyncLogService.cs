@@ -13,9 +13,11 @@ namespace Cappta.Logging.Services
 
 		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromMilliseconds(100);
 
-		public event Action<Exception> Exception;
+		public event Action<int>? Success;
+		public event Action<int, Exception>? Exception;
 
-		private readonly ConcurrentQueue<JsonLog> jsonLogQueue = new ConcurrentQueue<JsonLog>();
+		private readonly ConcurrentQueue<JsonLog> retryJsonLogQueue = new ConcurrentQueue<JsonLog>();
+		private readonly ConcurrentQueue<JsonLog> mainJsonLogQueue = new ConcurrentQueue<JsonLog>();
 		private readonly ILogService logService;
 
 		private int busyIndexerCount = 0;
@@ -25,7 +27,7 @@ namespace Cappta.Logging.Services
 
 		public AsyncLogService(ILogService logService, int syncJobs = DEFAULT_SYNC_JOBS, int queueCapacity = DEFAULT_SIZE_LIMIT)
 		{
-			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.logService = logService;
 			this.QueueCapacity = queueCapacity;
 
 			this.CreateSyncThreads(syncJobs);
@@ -35,7 +37,8 @@ namespace Cappta.Logging.Services
 		public int HealthyIndexerCount => this.healthyIndexerCount;
 		public int LostLogCount => this.lostLogCount;
 		public int QueueCapacity { get; }
-		public int QueueCount => this.jsonLogQueue.Count;
+		public int QueueCount => this.mainJsonLogQueue.Count + this.RetryQueueCount;
+		public int RetryQueueCount => this.retryJsonLogQueue.Count;
 
 		private void CreateSyncThreads(int syncJobs)
 		{
@@ -49,7 +52,7 @@ namespace Cappta.Logging.Services
 			}
 		}
 
-		public void Log(IDictionary<string, object> data)
+		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog)
@@ -59,7 +62,7 @@ namespace Cappta.Logging.Services
 				Interlocked.Increment(ref this.lostLogCount);
 				return;
 			}
-			this.jsonLogQueue.Enqueue(jsonLog);
+			this.mainJsonLogQueue.Enqueue(jsonLog);
 		}
 
 		private void IndexingThreadFunc()
@@ -70,7 +73,8 @@ namespace Cappta.Logging.Services
 				Interlocked.Increment(ref this.busyIndexerCount);
 				while (this.disposing == false)
 				{
-					var hasJsonLog = this.jsonLogQueue.TryDequeue(out var jsonLog);
+					var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog)
+						|| this.retryJsonLogQueue.TryDequeue(out jsonLog);
 
 					if (hasJsonLog == false)
 					{
@@ -83,11 +87,15 @@ namespace Cappta.Logging.Services
 					try
 					{
 						this.logService.Log(jsonLog);
+
+						try { this.Success?.Invoke(jsonLog.GetHashCode()); }
+						catch { /* Ignore */ }
 					}
 					catch (Exception ex)
 					{
 						this.Log(jsonLog);
-						try { this.Exception?.Invoke(ex); }
+
+						try { this.Exception?.Invoke(jsonLog.GetHashCode(), ex); }
 						catch { /* Ignore */ }
 					}
 				}

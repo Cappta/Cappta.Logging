@@ -8,8 +8,8 @@ namespace Cappta.Logging.Models
 
 		public Scope(object content, Action<Scope> disposeAction)
 		{
-			this.Content = content ?? throw new ArgumentNullException(nameof(content));
-			this.disposeAction = disposeAction ?? throw new ArgumentNullException(nameof(disposeAction));
+			this.Content = content;
+			this.disposeAction = disposeAction;
 		}
 
 		public object Content { get; }

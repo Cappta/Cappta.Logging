@@ -15,7 +15,7 @@ namespace Cappta.Logging.Health
 		private readonly IServiceProvider serviceProvider;
 
 		public AsyncLogHealthCheck(IServiceProvider serviceProvider)
-			=> this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+			=> this.serviceProvider = serviceProvider;
 
 		public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
 			=> await Task.FromResult(this.CheckHealth());
@@ -25,42 +25,44 @@ namespace Cappta.Logging.Health
 			var asyncLogServiceWatcher = this.serviceProvider.GetService<IAsyncLogServiceWatcher>();
 			if (asyncLogServiceWatcher == null) { return HealthCheckResult.Unhealthy($"{nameof(IAsyncLogServiceWatcher)} has not been registered into IOC"); }
 
-			var lostLogCounter = asyncLogServiceWatcher.LostLogCount;
+			var pendingRetryCount = asyncLogServiceWatcher.PendingRetryCount;
 			var queueCount = asyncLogServiceWatcher.QueueCount;
 			var acceptableQueueCount = asyncLogServiceWatcher.QueueCapacity / ACCEPTABLE_QUEUE_COUNT_DIVISOR;
 
-			if (lostLogCounter > 0)
+			if (pendingRetryCount > 0)
 			{
 				return HealthCheckResult.Unhealthy(
-					$"{lostLogCounter} logs have been lost already and the queue is currently {queueCount} entries long",
+					$"We're failing to index some logs and they may be lost beyond recover",
 					data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
 				);
 			}
 
 			if (queueCount > acceptableQueueCount)
 			{
-				return HealthCheckResult.Degraded(
-					$"No logs have been lost yet but the queue is currently {queueCount} entries long, which is higher than the expected maximum of {acceptableQueueCount}",
+				return HealthCheckResult.Unhealthy(
+					$"The queue is growing faster than the indexing rate, we're on the way to lose logs beyond recover",
 					data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
 				);
 			}
 
 			return HealthCheckResult.Healthy(
-				$"No logs have been lost yet and the queue is currently {queueCount} entries long",
+				$"Everything is fine",
 				data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
 			);
 		}
 
-		private Dictionary<string, object> GetResultData(IAsyncLogServiceWatcher asyncLogServiceWatcher, int acceptableQueueCount)
-			=> new Dictionary<string, object>()
+		private SortedDictionary<string, object> GetResultData(IAsyncLogServiceWatcher asyncLogServiceWatcher, int acceptableQueueCount)
+			=> new SortedDictionary<string, object>()
 			{
 				{nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
-				{nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
-				{nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
-				{nameof(asyncLogServiceWatcher.LostLogCount), asyncLogServiceWatcher.LostLogCount },
-				{nameof(asyncLogServiceWatcher.HealthyIndexerCount), asyncLogServiceWatcher.HealthyIndexerCount },
 				{nameof(asyncLogServiceWatcher.BusyIndexerCount), asyncLogServiceWatcher.BusyIndexerCount },
 				{nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
+				{nameof(asyncLogServiceWatcher.HealthyIndexerCount), asyncLogServiceWatcher.HealthyIndexerCount },
+				{nameof(asyncLogServiceWatcher.LostLogCount), asyncLogServiceWatcher.LostLogCount },
+				{nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
+				{nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
+				{nameof(asyncLogServiceWatcher.RetryQueueCount), asyncLogServiceWatcher.RetryQueueCount },
+				{nameof(asyncLogServiceWatcher.PendingRetryCount), asyncLogServiceWatcher.PendingRetryCount },
 			};
 	}
 }

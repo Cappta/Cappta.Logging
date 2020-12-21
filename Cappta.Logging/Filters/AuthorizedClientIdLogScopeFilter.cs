@@ -11,7 +11,7 @@ namespace Cappta.Logging.Filters
 		private readonly ILogger<AuthorizedClientIdLogScopeFilter> logger;
 
 		public AuthorizedClientIdLogScopeFilter(ILogger<AuthorizedClientIdLogScopeFilter> logger)
-			=> this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			=> this.logger = logger;
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 		{
@@ -19,7 +19,7 @@ namespace Cappta.Logging.Filters
 			var clientIdClaim = claimsPrincipal?.FindFirst("client_id");
 			var clientId = clientIdClaim?.Value;
 
-			var state = new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase) {
+			var state = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
 				{ "AuthorizedClientId", clientId }
 			};
 			using (this.logger.BeginScope(state))

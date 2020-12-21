@@ -11,7 +11,7 @@ namespace Cappta.Logging.Filters
 		private readonly ILogger<ActionArgumentLogScopeFilter> logger;
 
 		public ActionArgumentLogScopeFilter(ILogger<ActionArgumentLogScopeFilter> logger)
-			=> this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+			=> this.logger = logger;
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 		{

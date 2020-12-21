@@ -10,5 +10,7 @@ namespace Cappta.Logging.Health
 		int LostLogCount { get; }
 		int QueueCapacity { get; }
 		int QueueCount { get; }
+		int RetryQueueCount { get; }
+		int PendingRetryCount { get; }
 	}
 }

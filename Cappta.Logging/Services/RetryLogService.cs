@@ -12,11 +12,11 @@ namespace Cappta.Logging.Services
 
 		public RetryLogService(ILogService logService, TimeSpan timeout)
 		{
-			this.logService = logService ?? throw new ArgumentNullException(nameof(logService));
+			this.logService = logService;
 			this.timeout = timeout;
 		}
 
-		public void Log(IDictionary<string, object> data)
+		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog)

@@ -2,6 +2,6 @@
 {
 	public interface IObjectConverter
 	{
-		object Convert(object obj, ILogConverter logSerializer);
+		object? Convert(object? obj, ILogConverter logSerializer);
 	}
 }
