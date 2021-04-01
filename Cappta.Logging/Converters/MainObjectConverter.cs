@@ -1,5 +1,6 @@
 using Cappta.Logging.Extensions;
 using Microsoft.Extensions.Primitives;
+using Npgsql;
 using RestSharp;
 using System;
 using System.Collections;
@@ -39,6 +40,8 @@ namespace Cappta.Logging.Converters
 				case Type type: return type.ToString();
 				case Uri uri: return uri.ToString();
 				case CancellationToken cancellationToken: return this.ConvertCancellationToken(cancellationToken);
+				case IEnumerable<NpgsqlParameter> npgsqlParameterEnumerable: return this.ConvertNpgsqlParameterEnumerable(npgsqlParameterEnumerable, logSerializer);
+				case NpgsqlParameter npgsqlParameter: return this.ConvertNpgsqlParameter(npgsqlParameter, logSerializer);
 
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
@@ -187,6 +190,22 @@ namespace Cappta.Logging.Converters
 			=> new SortedDictionary<string, object>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "IsCancellationRequested", cancellationToken.IsCancellationRequested },
+			};
+
+		private object ConvertNpgsqlParameterEnumerable(IEnumerable<NpgsqlParameter> npgsqlParameterEnumerable, ILogConverter logSerializer)
+		{
+			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+			foreach (var npgsqlParameter in npgsqlParameterEnumerable)
+			{
+				dict.ForceAdd(npgsqlParameter.ParameterName, logSerializer.ConvertToLogObject(npgsqlParameter.Value));
+			}
+			return dict;
+		}
+
+		private object ConvertNpgsqlParameter(NpgsqlParameter npgsqlParameter, ILogConverter logSerializer)
+			=> new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+			{
+				{ npgsqlParameter.ParameterName, logSerializer.ConvertToLogObject(npgsqlParameter.Value) },
 			};
 
 		private object Reflect(object obj, ILogConverter logSerializer)
