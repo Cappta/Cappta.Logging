@@ -28,7 +28,7 @@ namespace Cappta.Logging.Converters
 			{
 				this.typeStack.Push(obj.GetType());
 
-				if (this.typeStack.Count > this.maxDepth) { obj = new DepthStackOverflow(this.typeStack.ToArray()); }
+				if (this.typeStack.Count > this.maxDepth) { throw new DepthStackOverflowException(this.maxDepth, this.typeStack.ToArray()); }
 
 				foreach (var objectSerializer in this.objectSerializers)
 				{
