@@ -6,21 +6,22 @@ using System.Threading.Tasks;
 
 namespace Cappta.Logging.Filters
 {
-	public class AuthorizedClientIdLogScopeFilter : IAsyncActionFilter
+	public class AuthorizedLogScopeFilter : IAsyncActionFilter
 	{
-		private readonly ILogger<AuthorizedClientIdLogScopeFilter> logger;
+		private readonly ILogger<AuthorizedLogScopeFilter> logger;
 
-		public AuthorizedClientIdLogScopeFilter(ILogger<AuthorizedClientIdLogScopeFilter> logger)
+		public AuthorizedLogScopeFilter(ILogger<AuthorizedLogScopeFilter> logger)
 			=> this.logger = logger;
 
 		public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 		{
 			var claimsPrincipal = context.HttpContext.User;
-			var clientIdClaim = claimsPrincipal?.FindFirst("client_id");
-			var clientId = clientIdClaim?.Value;
+			var clientId = claimsPrincipal.FindFirst("client_id")?.Value;
+			var userName = claimsPrincipal.FindFirst("username")?.Value;
 
 			var state = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
-				{ "AuthorizedClientId", clientId }
+				{ "AuthorizedClientId", clientId },
+				{ "AuthorizedUserName", userName }
 			};
 			using (this.logger.BeginScope(state))
 			{
