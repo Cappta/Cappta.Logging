@@ -77,17 +77,20 @@ namespace Sample
 			var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 			using (logger.BeginScope(new { Operation = nameof(DoSomethingElse) }))
 			{
-				using (logger.BeginScope("Target {Target} has been found", "Dog"))
+				using (logger.BeginScope(new SampleObject() { Data = "Data", Secret = "Secret" }))
 				{
-					try
+					using (logger.BeginScope("Target {Target} has been found", "Dog"))
 					{
-						var logger2 = serviceProvider.GetRequiredService<ILogger<JsonLoggerProvider>>();
-						logger2.LogInformation(new EventId(1, "GenericInfo"), "Sucessful {Procedure}", "Clean up");
-						Step1();
-					}
-					catch (Exception ex)
-					{
-						logger.LogError(new EventId(3, "GenericError"), ex);
+						try
+						{
+							var logger2 = serviceProvider.GetRequiredService<ILogger<JsonLoggerProvider>>();
+							logger2.LogInformation(new EventId(1, "GenericInfo"), "Sucessful {Procedure}", "Clean up");
+							Step1();
+						}
+						catch (Exception ex)
+						{
+							logger.LogError(new EventId(3, "GenericError"), ex);
+						}
 					}
 				}
 			}

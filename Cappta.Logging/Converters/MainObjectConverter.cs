@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 
 namespace Cappta.Logging.Converters
@@ -221,11 +223,21 @@ namespace Cappta.Logging.Converters
 			return dict;
 		}
 
-		private static object GetPropertyValue(object obj, PropertyInfo prop)
+		private static object? GetPropertyValue(object obj, PropertyInfo prop)
 		{
 			try
 			{
-				return prop.GetValue(obj);
+				var value =  prop.GetValue(obj);
+
+				if (value is null || prop.GetCustomAttribute<SecretAttribute>() is null) { return value; }
+
+				var stringValue = value.ToString();
+
+				using var sha256 = SHA256.Create();
+				var secretBytes = Encoding.UTF8.GetBytes(stringValue);
+				var hashBytes = sha256.ComputeHash(secretBytes);
+				var base64Sha256 = System.Convert.ToBase64String(hashBytes);
+				return $"SHA256:{base64Sha256}";
 			}
 			catch (Exception ex)
 			{
