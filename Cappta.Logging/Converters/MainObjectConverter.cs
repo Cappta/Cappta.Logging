@@ -216,6 +216,8 @@ namespace Cappta.Logging.Converters
 			var objType = obj.GetType();
 			foreach (var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty))
 			{
+				if(prop.GetMethod is null) { continue; }
+
 				var value = GetPropertyValue(obj, prop);
 
 				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(value));
