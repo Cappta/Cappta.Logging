@@ -217,6 +217,7 @@ namespace Cappta.Logging.Converters
 			foreach (var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty))
 			{
 				if(prop.GetMethod is null) { continue; }
+				if(prop.GetCustomAttribute<IgnoreAttribute>() is not null) { continue; }
 
 				var value = GetPropertyValue(obj, prop);
 

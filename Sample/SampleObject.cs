@@ -8,6 +8,9 @@ namespace Sample
 
 		public string Data { get; set; } //Public with getter are logged normally
 
+		[Ignore]
+		public string IgnoredData { get; set; } //Ignored attributes are not logged
+
 		[Secret]
 		public string Secret { get; set; } //Secret attribute hashes the value, so it's safe but can be checked
 
