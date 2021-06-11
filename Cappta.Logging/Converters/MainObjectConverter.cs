@@ -143,6 +143,7 @@ namespace Cappta.Logging.Converters
 				{ "Content", restResponse.Content },
 				{ "Exception", logSerializer.ConvertToLogObject(restResponse.ErrorException) },
 				{ "Header", logSerializer.ConvertToLogObject(restResponse.Headers.ToDictionary(p => p.Name, p => p.Value)) },
+				{ "Uri", logSerializer.ConvertToLogObject(restResponse.ResponseUri) },
 				{ "State", restResponse.ErrorMessage },
 				{ "Status", restResponse.StatusCode },
 				{ "StatusCode", (int)restResponse.StatusCode },
