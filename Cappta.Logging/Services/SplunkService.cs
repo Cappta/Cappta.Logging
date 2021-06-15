@@ -1,15 +1,11 @@
 ﻿using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
-using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 
-namespace Cappta.Logging.Services
-{
+namespace Cappta.Logging.Services {
 	public class SplunkService : ILogService
 	{
 		private const string LOG_ENDPOINT = @"services/collector";
@@ -42,7 +38,7 @@ namespace Cappta.Logging.Services
 
 			if (response.IsSuccessful == true) { return; }
 
-			throw response.ErrorException ?? new ApiResponseException(response.StatusCode);
+			throw response.ErrorException ?? new ApiResponseException(response);
 		}
 	}
 }

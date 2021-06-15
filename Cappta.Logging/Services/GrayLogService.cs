@@ -3,12 +3,10 @@ using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
 using RestSharp;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cappta.Logging.Services
-{
+namespace Cappta.Logging.Services {
 	public class GrayLogService : ILogService
 	{
 		private const string URN = "gelf";
@@ -37,7 +35,7 @@ namespace Cappta.Logging.Services
 			var response = this.restClient.Execute(request);
 			if (response.IsSuccessful == true) { return; }
 
-			throw response.ErrorException ?? new ApiResponseException(response.StatusCode);
+			throw response.ErrorException ?? new ApiResponseException(response);
 		}
 	}
 }

@@ -46,7 +46,7 @@ namespace Cappta.Logging.Services
 			var response = this.restClient.Execute(request);
 			if (response.IsSuccessful == true) { return; }
 
-			throw response.ErrorException ?? new ApiResponseException(response.StatusCode);
+			throw response.ErrorException ?? new ApiResponseException(response);
 		}
 	}
 }
