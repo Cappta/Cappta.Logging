@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Cappta.Logging.Converters
 {
@@ -45,6 +46,7 @@ namespace Cappta.Logging.Converters
 				case IEnumerable<NpgsqlParameter> npgsqlParameterEnumerable: return this.ConvertNpgsqlParameterEnumerable(npgsqlParameterEnumerable, logSerializer);
 				case NpgsqlParameter npgsqlParameter: return this.ConvertNpgsqlParameter(npgsqlParameter, logSerializer);
 
+				case TaskCanceledException taskCanceledException: return this.ConvertTaskCanceledException(taskCanceledException, logSerializer);
 				case AggregateException aggregateException: return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex: return this.ConvertException(ex, logSerializer);
 				case IEnumerable enumerable: return this.ConvertEnumerable(enumerable, logSerializer);
@@ -55,6 +57,15 @@ namespace Cappta.Logging.Converters
 					if (obj.GetType().IsPrimitive) { return obj; }
 					return this.Reflect(obj, logSerializer);
 			}
+		}
+
+		private object ConvertTaskCanceledException(TaskCanceledException taskCanceledException, ILogConverter logSerializer) {
+			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
+				{ "StackTrace", taskCanceledException.StackTrace },
+				{ "Type", taskCanceledException.GetType().FullName },
+				{ "InnerException", logSerializer.ConvertToLogObject(taskCanceledException.InnerException) },
+			};
+			return dict;
 		}
 
 		private object ConvertAggregateException(AggregateException aggregateException, ILogConverter logSerializer)
@@ -231,7 +242,7 @@ namespace Cappta.Logging.Converters
 		{
 			try
 			{
-				var value =  prop.GetValue(obj);
+				var value = prop.GetValue(obj);
 
 				if (value is null || prop.GetCustomAttribute<SecretAttribute>() is null) { return value; }
 
