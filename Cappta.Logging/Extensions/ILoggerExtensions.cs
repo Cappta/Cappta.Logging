@@ -1,10 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 
-namespace Cappta.Logging.Extensions
-{
-	public static class ILoggerExtensions
-	{
+namespace Cappta.Logging.Extensions {
+	public static class ILoggerExtensions {
 		public static void Log(this ILogger logger, LogLevel logLevel, Exception exception)
 			=> logger.Log(logLevel, exception, string.Empty);
 

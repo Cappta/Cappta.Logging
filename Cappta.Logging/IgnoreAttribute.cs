@@ -1,10 +1,8 @@
-﻿using System;
+using System;
 
-namespace Cappta.Logging
-{
+namespace Cappta.Logging {
 
 	[AttributeUsage(AttributeTargets.Property)]
-	public class IgnoreAttribute : Attribute
-	{
+	public class IgnoreAttribute : Attribute {
 	}
 }

@@ -1,18 +1,15 @@
-﻿using Cappta.Logging.Converters;
+using Cappta.Logging.Converters;
 using Cappta.Logging.Services;
 using Microsoft.Extensions.Logging;
 
-namespace Cappta.Logging
-{
-	public class JsonLoggerProvider : ILoggerProvider, ISupportExternalScope
-	{
-		private readonly ScopeProvider scopeProvider = new ScopeProvider();
+namespace Cappta.Logging {
+	public class JsonLoggerProvider : ILoggerProvider, ISupportExternalScope {
+		private readonly ScopeProvider scopeProvider = new();
 
 		private readonly ILogConverterFactory logConverterFactory;
 		private readonly ILogService logService;
 
-		public JsonLoggerProvider(ILogConverterFactory logConverterFactory, ILogService logService)
-		{
+		public JsonLoggerProvider(ILogConverterFactory logConverterFactory, ILogService logService) {
 			this.logConverterFactory = logConverterFactory;
 			this.logService = logService;
 		}

@@ -1,15 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cappta.Logging.Extensions
-{
-	public static class IDictionaryExtensions
-	{
-		public static IDictionary<string, object?> CreateOrGetSubDict(this IDictionary<string, object?> dictionary, string key)
-		{
-			if (dictionary.ContainsKey(key))
-			{
+namespace Cappta.Logging.Extensions {
+	public static class IDictionaryExtensions {
+		public static IDictionary<string, object?> CreateOrGetSubDict(this IDictionary<string, object?> dictionary, string key) {
+			if(dictionary.ContainsKey(key)) {
 				return dictionary[key] as IDictionary<string, object?>
 					?? throw new InvalidOperationException(
 						$"Key {key} of dictionary contains an object of type {dictionary[key]?.GetType()} which is not an {nameof(IDictionary<string, object?>)}");
@@ -20,29 +16,24 @@ namespace Cappta.Logging.Extensions
 			return subDict;
 		}
 
-		public static void ForceAdd(this IDictionary<string, object?> dictionary, string key, object? value)
-		{
-			if (dictionary.TryAdd(key, value)) { return; }
+		public static void ForceAdd(this IDictionary<string, object?> dictionary, string key, object? value) {
+			if(dictionary.TryAdd(key, value)) { return; }
 
 			var currentValue = dictionary[key];
-			if (currentValue is null)
-			{
+			if(currentValue is null) {
 				dictionary[key] = value;
 				return;
 			}
-			if (currentValue is IDictionary<string, object?> currentDictionaryValue
-				&& value is IDictionary<string, object?> dictionaryValue)
-			{
+			if(currentValue is IDictionary<string, object?> currentDictionaryValue
+				&& value is IDictionary<string, object?> dictionaryValue) {
 				currentDictionaryValue.MergeWith(dictionaryValue);
 				return;
 			}
-			if (currentValue.Equals(value)) { return; }
-			if (currentValue is string currentStringValue
-				&& value is string stringValue)
-			{
-				if (stringValue == string.Empty) { return; }
-				if (currentStringValue == string.Empty)
-				{
+			if(currentValue.Equals(value)) { return; }
+			if(currentValue is string currentStringValue
+				&& value is string stringValue) {
+				if(stringValue == string.Empty) { return; }
+				if(currentStringValue == string.Empty) {
 					dictionary[key] = stringValue;
 					return;
 				}
@@ -52,66 +43,49 @@ namespace Cappta.Logging.Extensions
 			}
 
 			var counter = 2;
-			while (dictionary.TryAdd($"{key}{counter}", value) == false) { counter++; }
+			while(dictionary.TryAdd($"{key}{counter}", value) == false) { counter++; }
 		}
 
-		public static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
-		{
-			try
-			{
+		public static bool TryAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value) {
+			try {
 				dictionary.Add(key, value);
 				return true;
-			}
-			catch { return false; }
+			} catch { return false; }
 		}
 
-		public static void MergeWith(this IDictionary<string, object?> baseDictionary, params IDictionary<string, object?>[] incomingDictionaries)
-		{
-			foreach (var incomingDictionary in incomingDictionaries)
-			{
-				foreach (var kvp in incomingDictionary)
-				{
+		public static void MergeWith(this IDictionary<string, object?> baseDictionary, params IDictionary<string, object?>[] incomingDictionaries) {
+			foreach(var incomingDictionary in incomingDictionaries) {
+				foreach(var kvp in incomingDictionary) {
 					baseDictionary.ForceAdd(kvp.Key, kvp.Value);
 				}
 			}
 		}
 
-		public static void RemoveNullValues(this IDictionary<string, object?> dictionary)
-		{
-			foreach (var key in dictionary.Keys.ToArray())
-			{
+		public static void RemoveNullValues(this IDictionary<string, object?> dictionary) {
+			foreach(var key in dictionary.Keys.ToArray()) {
 				var value = dictionary[key];
-				if (value is IDictionary<string, object?> subDict)
-				{
+				if(value is IDictionary<string, object?> subDict) {
 					subDict.RemoveNullValues();
-				}
-				else if (value is null || value as string == string.Empty)
-				{
+				} else if(value is null || value as string == string.Empty) {
 					dictionary.Remove(key);
 				}
 			}
 		}
 
-		public static IDictionary<string, object?> Flatten(this IDictionary<string, object?> dictionary)
-		{
+		public static IDictionary<string, object?> Flatten(this IDictionary<string, object?> dictionary) {
 			var dict = new SortedDictionary<string, object?>();
-			foreach (var kvp in dictionary.EnumerateFlatKVPs(null))
-			{
+			foreach(var kvp in dictionary.EnumerateFlatKVPs(null)) {
 				dict.ForceAdd(kvp.Key, kvp.Value);
 			}
 			return dict;
 		}
 
-		private static IEnumerable<KeyValuePair<string, object?>> EnumerateFlatKVPs(this IDictionary<string, object?> dictionary, string? basePath)
-		{
-			foreach (var kvp in dictionary)
-			{
+		private static IEnumerable<KeyValuePair<string, object?>> EnumerateFlatKVPs(this IDictionary<string, object?> dictionary, string? basePath) {
+			foreach(var kvp in dictionary) {
 				var key = kvp.Key.ToPascalCase();
 				var path = basePath + key;
-				if (kvp.Value is IDictionary<string, object?> dictionaryValue)
-				{
-					foreach (var flattened in dictionaryValue.EnumerateFlatKVPs(path))
-					{
+				if(kvp.Value is IDictionary<string, object?> dictionaryValue) {
+					foreach(var flattened in dictionaryValue.EnumerateFlatKVPs(path)) {
 						yield return flattened;
 					}
 					continue;

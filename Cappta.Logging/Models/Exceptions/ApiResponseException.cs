@@ -1,12 +1,10 @@
-﻿using Cappta.Logging.Converters;
+using Cappta.Logging.Converters;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 
-namespace Cappta.Logging.Models.Exceptions
-{
-	public class ApiResponseException : Exception, ILogConvertable
-	{
+namespace Cappta.Logging.Models.Exceptions {
+	public class ApiResponseException : Exception, ILogConvertable {
 		public ApiResponseException(IRestResponse restResponse)
 			=> this.Response = restResponse;
 

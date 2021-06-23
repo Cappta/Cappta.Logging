@@ -1,21 +1,18 @@
-﻿using Cappta.Logging.Converters;
+using Cappta.Logging.Converters;
 using Cappta.Logging.Extensions;
 using Cappta.Logging.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace Cappta.Logging
-{
-	internal class JsonLogger : ILogger
-	{
+namespace Cappta.Logging {
+	internal class JsonLogger : ILogger {
 		private readonly string categoryName;
 		private readonly ILogConverterFactory logConverterFactory;
 		private readonly ILogService logService;
 		private readonly IExternalScopeProvider scopeProvider;
 
-		public JsonLogger(string categoryName, ILogConverterFactory logConverterFactory, ILogService logService, IExternalScopeProvider scopeProvider)
-		{
+		public JsonLogger(string categoryName, ILogConverterFactory logConverterFactory, ILogService logService, IExternalScopeProvider scopeProvider) {
 			this.categoryName = categoryName;
 			this.logConverterFactory = logConverterFactory;
 			this.logService = logService;
@@ -27,8 +24,7 @@ namespace Cappta.Logging
 
 		public bool IsEnabled(LogLevel logLevel) => true; //Do not block logs from here
 
-		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-		{
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) {
 			var logConverter = this.logConverterFactory.Create();
 
 			var log = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
@@ -54,12 +50,11 @@ namespace Cappta.Logging
 		private void MergeScopes(ILogConverter logConverter, object scope, IDictionary<string, object?> dict)
 			=> dict.MergeWith(this.ObjectToDict(logConverter, scope));
 
-		private IDictionary<string, object?> ObjectToDict(ILogConverter logConverter, object? obj)
-		{
+		private IDictionary<string, object?> ObjectToDict(ILogConverter logConverter, object? obj) {
 			var logObject = logConverter.ConvertToLogObject(obj);
 
-			if (logObject is IDictionary<string, object?> dict) { return dict; }
-			if (obj is null) { return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase); }
+			if(logObject is IDictionary<string, object?> dict) { return dict; }
+			if(obj is null) { return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase); }
 
 			return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) { { obj.GetType().Name, obj } };
 		}

@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Cappta.Logging.Models;
 using Cappta.Logging.Models.Exceptions;
 using Cappta.Logging.Serializer;
@@ -7,10 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Cappta.Logging.Services
-{
-	public class ElasticSearchLogService : ILogService
-	{
+namespace Cappta.Logging.Services {
+	public class ElasticSearchLogService : ILogService {
 		private const string TIMESTAMP_FIELD = "@timestamp";
 		private const string TIME_FORMAT = @"yyyy-MM-ddTHH:mm:ss.fffZ";
 
@@ -20,10 +18,9 @@ namespace Cappta.Logging.Services
 		private readonly string resource;
 		private readonly ISerializer serializer;
 
-		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null)
-		{
+		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
 			this.restClient = new RestClient(elasticSearchUri);
-			if (string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
+			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
 
 			this.resource = $"{index}/default";
 			this.serializer = serializer;
@@ -33,8 +30,7 @@ namespace Cappta.Logging.Services
 		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
 
-		public void Log(JsonLog jsonLog)
-		{
+		public void Log(JsonLog jsonLog) {
 			var request = new RestRequest(this.resource, Method.POST);
 
 			var utcLogTime = jsonLog.Time.ToUniversalTime();
@@ -44,7 +40,7 @@ namespace Cappta.Logging.Services
 			request.AddRawJsonBody(json);
 
 			var response = this.restClient.Execute(request);
-			if (response.IsSuccessful == true) { return; }
+			if(response.IsSuccessful == true) { return; }
 
 			throw response.ErrorException ?? new ApiResponseException(response);
 		}

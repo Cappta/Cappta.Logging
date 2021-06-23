@@ -1,17 +1,14 @@
-﻿using Cappta.Logging.Models;
+using Cappta.Logging.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Cappta.Logging.Services
-{
-	public class RetryLogService : ILogService
-	{
+namespace Cappta.Logging.Services {
+	public class RetryLogService : ILogService {
 		private readonly ILogService logService;
 		private readonly TimeSpan timeout;
 
-		public RetryLogService(ILogService logService, TimeSpan timeout)
-		{
+		public RetryLogService(ILogService logService, TimeSpan timeout) {
 			this.logService = logService;
 			this.timeout = timeout;
 		}
@@ -19,18 +16,14 @@ namespace Cappta.Logging.Services
 		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
 
-		public void Log(JsonLog jsonLog)
-		{
+		public void Log(JsonLog jsonLog) {
 			var stopwatch = Stopwatch.StartNew();
 
-			while (true)
-			{
-				try
-				{
+			while(true) {
+				try {
 					this.logService.Log(jsonLog);
 					return;
-				}
-				catch when (stopwatch.Elapsed < this.timeout) { /* Do nothing */ }
+				} catch when(stopwatch.Elapsed < this.timeout) { /* Do nothing */ }
 			}
 		}
 	}

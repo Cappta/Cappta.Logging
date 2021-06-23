@@ -1,9 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 
-namespace Cappta.Logging.Health
-{
-	public interface IAsyncLogServiceWatcher
-	{
+namespace Cappta.Logging.Health {
+	public interface IAsyncLogServiceWatcher {
 		int BusyIndexerCount { get; }
 		ReadOnlyDictionary<string, int> ExceptionMessageCountDictionary { get; }
 		int HealthyIndexerCount { get; }

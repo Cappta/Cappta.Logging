@@ -1,15 +1,12 @@
-﻿using Cappta.Logging.Converters;
+using Cappta.Logging.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cappta.Logging.Models.Exceptions
-{
-	public class DepthStackOverflowException : Exception, ILogConvertable
-	{
+namespace Cappta.Logging.Models.Exceptions {
+	public class DepthStackOverflowException : Exception, ILogConvertable {
 		public DepthStackOverflowException(int maxDepth, Type[] typeStack)
-			: base($"Breached the maximum depth of {maxDepth} when serializing log objects [{string.Join("; ", typeStack.Select((type, i) => $"#{i} - {type.FullName}"))}]")
-		{
+			: base($"Breached the maximum depth of {maxDepth} when serializing log objects [{string.Join("; ", typeStack.Select((type, i) => $"#{i} - {type.FullName}"))}]") {
 			this.MaxDepth = maxDepth;
 			this.TypeStack = typeStack;
 		}

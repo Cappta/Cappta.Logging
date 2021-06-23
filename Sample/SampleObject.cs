@@ -1,9 +1,7 @@
-﻿using Cappta.Logging;
+using Cappta.Logging;
 
-namespace Sample
-{
-	public class SampleObject
-	{
+namespace Sample {
+	public class SampleObject {
 		public string DataWithoutGet { set => this.Data = value; } //Without a getter, it's not logged
 
 		public string Data { get; set; } //Public with getter are logged normally

@@ -1,4 +1,4 @@
-﻿#define ElasticSearch
+#define ElasticSearch
 //#define Splunk
 //#define GrayLog
 
@@ -12,12 +12,9 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 
-namespace Sample
-{
-	class Program
-	{
-		static void Main(string[] args)
-		{
+namespace Sample {
+	class Program {
+		static void Main(string[] args) {
 #if ElasticSearch
 			var apiLogService = new ElasticSearchLogService(@"http://scorpion-homolog.cappta.com.br:9200", "garbage", new JsonSerializer());
 #elif Splunk
@@ -50,45 +47,32 @@ namespace Sample
 			Thread.Sleep(TimeSpan.FromSeconds(10));
 		}
 
-		private static void DoSomething(IServiceProvider serviceProvider)
-		{
+		private static void DoSomething(IServiceProvider serviceProvider) {
 			var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-			using (logger.BeginScope(new { Operation = nameof(DoSomething) }))
-			{
-				using (logger.BeginScope("User {User} has logged in", "Arroz"))
-				{
+			using(logger.BeginScope(new { Operation = nameof(DoSomething) })) {
+				using(logger.BeginScope("User {User} has logged in", "Arroz")) {
 					var action = "Cooking Rice";
-					try
-					{
+					try {
 						var logger2 = serviceProvider.GetRequiredService<ILogger<JsonLoggerProvider>>();
 						logger2.LogInformation(new EventId(1, "GenericInfo"), "User is {Action}", action);
 						Step1();
-					}
-					catch (Exception ex)
-					{
+					} catch(Exception ex) {
 						logger.LogError(new EventId(3, "GenericError"), ex, "Something is not right when {Action}", action);
 					}
 				}
 			}
 		}
 
-		private static void DoSomethingElse(IServiceProvider serviceProvider)
-		{
+		private static void DoSomethingElse(IServiceProvider serviceProvider) {
 			var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-			using (logger.BeginScope(new { Operation = nameof(DoSomethingElse) }))
-			{
-				using (logger.BeginScope(new SampleObject() { Data = "Data", Secret = "Secret" }))
-				{
-					using (logger.BeginScope("Target {Target} has been found", "Dog"))
-					{
-						try
-						{
+			using(logger.BeginScope(new { Operation = nameof(DoSomethingElse) })) {
+				using(logger.BeginScope(new SampleObject() { Data = "Data", Secret = "Secret" })) {
+					using(logger.BeginScope("Target {Target} has been found", "Dog")) {
+						try {
 							var logger2 = serviceProvider.GetRequiredService<ILogger<JsonLoggerProvider>>();
 							logger2.LogInformation(new EventId(1, "GenericInfo"), "Sucessful {Procedure}", "Clean up");
 							Step1();
-						}
-						catch (Exception ex)
-						{
+						} catch(Exception ex) {
 							logger.LogError(new EventId(3, "GenericError"), ex);
 						}
 					}

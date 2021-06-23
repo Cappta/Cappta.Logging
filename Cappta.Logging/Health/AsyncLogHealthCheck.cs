@@ -1,4 +1,4 @@
-﻿using Cappta.Logging.Extensions;
+using Cappta.Logging.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cappta.Logging.Health
-{
-	public class AsyncLogHealthCheck : IHealthCheck
-	{
+namespace Cappta.Logging.Health {
+	public class AsyncLogHealthCheck : IHealthCheck {
 		private static readonly int ACCEPTABLE_QUEUE_COUNT_DIVISOR = 10;
 
 		private readonly IServiceProvider serviceProvider;
@@ -20,25 +18,22 @@ namespace Cappta.Logging.Health
 		public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
 			=> await Task.FromResult(this.CheckHealth());
 
-		private HealthCheckResult CheckHealth()
-		{
+		private HealthCheckResult CheckHealth() {
 			var asyncLogServiceWatcher = this.serviceProvider.GetService<IAsyncLogServiceWatcher>();
-			if (asyncLogServiceWatcher == null) { return HealthCheckResult.Unhealthy($"{nameof(IAsyncLogServiceWatcher)} has not been registered into IOC"); }
+			if(asyncLogServiceWatcher == null) { return HealthCheckResult.Unhealthy($"{nameof(IAsyncLogServiceWatcher)} has not been registered into IOC"); }
 
 			var pendingRetryCount = asyncLogServiceWatcher.PendingRetryCount;
 			var queueCount = asyncLogServiceWatcher.QueueCount;
 			var acceptableQueueCount = asyncLogServiceWatcher.QueueCapacity / ACCEPTABLE_QUEUE_COUNT_DIVISOR;
 
-			if (pendingRetryCount > 0)
-			{
+			if(pendingRetryCount > 0) {
 				return HealthCheckResult.Unhealthy(
 					$"We're failing to index some logs and they may be lost beyond recover",
 					data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
 				);
 			}
 
-			if (queueCount > acceptableQueueCount)
-			{
+			if(queueCount > acceptableQueueCount) {
 				return HealthCheckResult.Unhealthy(
 					$"The queue is growing faster than the indexing rate, we're on the way to lose logs beyond recover",
 					data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
@@ -52,17 +47,17 @@ namespace Cappta.Logging.Health
 		}
 
 		private SortedDictionary<string, object> GetResultData(IAsyncLogServiceWatcher asyncLogServiceWatcher, int acceptableQueueCount)
-			=> new SortedDictionary<string, object>()
+			=> new()
 			{
-				{nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
-				{nameof(asyncLogServiceWatcher.BusyIndexerCount), asyncLogServiceWatcher.BusyIndexerCount },
-				{nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
-				{nameof(asyncLogServiceWatcher.HealthyIndexerCount), asyncLogServiceWatcher.HealthyIndexerCount },
-				{nameof(asyncLogServiceWatcher.LostLogCount), asyncLogServiceWatcher.LostLogCount },
-				{nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
-				{nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
-				{nameof(asyncLogServiceWatcher.RetryQueueCount), asyncLogServiceWatcher.RetryQueueCount },
-				{nameof(asyncLogServiceWatcher.PendingRetryCount), asyncLogServiceWatcher.PendingRetryCount },
+				{ nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
+				{ nameof(asyncLogServiceWatcher.BusyIndexerCount), asyncLogServiceWatcher.BusyIndexerCount },
+				{ nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
+				{ nameof(asyncLogServiceWatcher.HealthyIndexerCount), asyncLogServiceWatcher.HealthyIndexerCount },
+				{ nameof(asyncLogServiceWatcher.LostLogCount), asyncLogServiceWatcher.LostLogCount },
+				{ nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
+				{ nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
+				{ nameof(asyncLogServiceWatcher.RetryQueueCount), asyncLogServiceWatcher.RetryQueueCount },
+				{ nameof(asyncLogServiceWatcher.PendingRetryCount), asyncLogServiceWatcher.PendingRetryCount },
 			};
 	}
 }

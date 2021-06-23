@@ -1,13 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace Cappta.Logging.Models
-{
-	public class JsonLog
-	{
+namespace Cappta.Logging.Models {
+	public class JsonLog {
 		public JsonLog(IDictionary<string, object?> data) : this(data, DateTimeOffset.Now) { }
-		public JsonLog(IDictionary<string, object?> data, DateTimeOffset time)
-		{
+		public JsonLog(IDictionary<string, object?> data, DateTimeOffset time) {
 			this.Data = data;
 			this.Time = time;
 		}

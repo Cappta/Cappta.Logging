@@ -1,31 +1,25 @@
-﻿using Cappta.Logging.Models;
+using Cappta.Logging.Models;
 using Cappta.Logging.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Cappta.Logging.Health
-{
-	public class AsyncLogServiceWatcher : IAsyncLogServiceWatcher
-	{
+namespace Cappta.Logging.Health {
+	public class AsyncLogServiceWatcher : IAsyncLogServiceWatcher {
 		private readonly AsyncLogService asyncLogService;
-		private readonly Dictionary<string, int> exceptionMessageCountDict = new Dictionary<string, int>();
-		private readonly ConcurrentHashSet<int> failingHashSet = new ConcurrentHashSet<int>();
+		private readonly Dictionary<string, int> exceptionMessageCountDict = new();
+		private readonly ConcurrentHashSet<int> failingHashSet = new();
 
-		public AsyncLogServiceWatcher(AsyncLogService asyncLogService)
-		{
+		public AsyncLogServiceWatcher(AsyncLogService asyncLogService) {
 			this.asyncLogService = asyncLogService;
 			this.asyncLogService.Success += this.OnAsyncLogServiceSuccess;
 			this.asyncLogService.Exception += this.OnAsyncLogServiceException;
 		}
 
 		public int BusyIndexerCount => this.asyncLogService.BusyIndexerCount;
-		public ReadOnlyDictionary<string, int> ExceptionMessageCountDictionary
-		{
-			get
-			{
-				lock (this.exceptionMessageCountDict)
-				{
+		public ReadOnlyDictionary<string, int> ExceptionMessageCountDictionary {
+			get {
+				lock(this.exceptionMessageCountDict) {
 					return new ReadOnlyDictionary<string, int>(this.exceptionMessageCountDict);
 				}
 			}
@@ -40,13 +34,10 @@ namespace Cappta.Logging.Health
 		private void OnAsyncLogServiceSuccess(int hashCode)
 			=> this.failingHashSet.Remove(hashCode);
 
-		private void OnAsyncLogServiceException(int hashCode, Exception ex)
-		{
+		private void OnAsyncLogServiceException(int hashCode, Exception ex) {
 			this.failingHashSet.Add(hashCode);
-			lock (this.exceptionMessageCountDict)
-			{
-				if (this.exceptionMessageCountDict.ContainsKey(ex.Message))
-				{
+			lock(this.exceptionMessageCountDict) {
+				if(this.exceptionMessageCountDict.ContainsKey(ex.Message)) {
 					this.exceptionMessageCountDict[ex.Message]++;
 					return;
 				}
