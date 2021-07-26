@@ -19,7 +19,7 @@ namespace Cappta.Logging {
 			var secretBytes = Encoding.UTF8.GetBytes(value);
 			var hashBytes = sha256.ComputeHash(secretBytes);
 			var base64Sha256 = Convert.ToBase64String(hashBytes);
-			return $"SHA256:{base64Sha256}";
+			return $"|SHA256:{base64Sha256}|";
 		}
 
 		public void Protect(IDictionary<string, object?> dictionary) {
@@ -41,8 +41,7 @@ namespace Cappta.Logging {
 
 				var protectedStringBuilder = new StringBuilder(valueString);
 				foreach(var secret in exposedSecrets) {
-					var protection = $"|{this.SecretHashDict[secret]}|";
-					protectedStringBuilder.Replace(secret, protection);
+					protectedStringBuilder.Replace(secret, this.SecretHashDict[secret]);
 				}
 				dictionary[key] = protectedStringBuilder.ToString();
 			}
