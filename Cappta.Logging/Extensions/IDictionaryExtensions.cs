@@ -66,7 +66,7 @@ namespace Cappta.Logging.Extensions {
 				var value = dictionary[key];
 				if(value is IDictionary<string, object?> subDict) {
 					subDict.RemoveNullValues();
-				} else if(value is null || value as string == string.Empty) {
+				} else if(value is null || (value as string) == string.Empty) {
 					dictionary.Remove(key);
 				}
 			}

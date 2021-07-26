@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Cappta.Logging {
 	public class JsonLoggerProvider : ILoggerProvider, ISupportExternalScope {
 		private readonly ScopeProvider scopeProvider = new();
+		private readonly SecretProvider secretProvider = new();
 
 		private readonly ILogConverterFactory logConverterFactory;
 		private readonly ILogService logService;
@@ -15,9 +16,16 @@ namespace Cappta.Logging {
 		}
 
 		public IScopeProvider ScopeProvider => this.scopeProvider;
+		public ISecretProvider SecretProvider => this.secretProvider;
 
 		public ILogger CreateLogger(string categoryName)
-			=> new JsonLogger(categoryName, this.logConverterFactory, this.logService, this.scopeProvider);
+			=> new JsonLogger(
+				categoryName,
+				this.logConverterFactory,
+				this.logService,
+				this.scopeProvider,
+				this.secretProvider
+			);
 
 		public void Dispose() { }
 

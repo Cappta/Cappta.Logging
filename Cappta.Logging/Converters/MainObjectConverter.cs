@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +19,11 @@ namespace Cappta.Logging.Converters {
 
 		public static MainObjectConverter Instance { get; } = new MainObjectConverter();
 
-		public object? Convert(object? obj, ILogConverter logSerializer) {
+		public object? Convert(
+			object? obj,
+			ILogConverter logSerializer,
+			ISecretProvider secretProvider
+		) {
 			if(obj == null) { return null; }
 			switch(obj) {
 				case DateTime dateTime:
@@ -68,14 +70,14 @@ namespace Cappta.Logging.Converters {
 				case IEnumerable enumerable:
 					return this.ConvertEnumerable(enumerable, logSerializer);
 				case IRestClient restClient:
-					return this.ConvertIRestClient(restClient, logSerializer);
+					return this.ConvertIRestClient(restClient);
 				case IRestRequest restRequest:
 					return this.ConvertIRestRequest(restRequest, logSerializer);
 				case IRestResponse restResponse:
 					return this.ConvertIRestResponse(restResponse, logSerializer);
 				default:
 					if(obj.GetType().IsPrimitive) { return obj; }
-					return this.Reflect(obj, logSerializer);
+					return this.Reflect(obj, logSerializer, secretProvider);
 			}
 		}
 
@@ -141,7 +143,7 @@ namespace Cappta.Logging.Converters {
 			this.AppendExtendedExceptionProperties(dict, type.BaseType, ex, logSerializer);
 		}
 
-		private object ConvertIRestClient(IRestClient restClient, ILogConverter logSerializer)
+		private object ConvertIRestClient(IRestClient restClient)
 			=> new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "BaseUri", restClient.BaseUrl}
@@ -225,33 +227,28 @@ namespace Cappta.Logging.Converters {
 				{ npgsqlParameter.ParameterName, logSerializer.ConvertToLogObject(npgsqlParameter.Value) },
 			};
 
-		private object Reflect(object obj, ILogConverter logSerializer) {
+		private object Reflect(object obj, ILogConverter logSerializer, ISecretProvider secretProvider) {
 			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 			var objType = obj.GetType();
 			foreach(var prop in objType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty)) {
 				if(prop.GetMethod is null) { continue; }
 				if(prop.GetCustomAttribute<IgnoreAttribute>() is not null) { continue; }
 
-				var value = GetPropertyValue(obj, prop);
+				var value = GetPropertyValue(obj, prop, secretProvider);
 
 				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(value));
 			}
 			return dict;
 		}
 
-		private static object? GetPropertyValue(object obj, PropertyInfo prop) {
+		private static object? GetPropertyValue(object obj, PropertyInfo prop, ISecretProvider secretProvider) {
 			try {
 				var value = prop.GetValue(obj);
 
 				if(value is null || prop.GetCustomAttribute<SecretAttribute>() is null) { return value; }
 
 				var stringValue = value.ToString();
-
-				using var sha256 = SHA256.Create();
-				var secretBytes = Encoding.UTF8.GetBytes(stringValue);
-				var hashBytes = sha256.ComputeHash(secretBytes);
-				var base64Sha256 = System.Convert.ToBase64String(hashBytes);
-				return $"SHA256:{base64Sha256}";
+				return secretProvider.Protect(stringValue);
 			} catch(Exception ex) {
 				return ex;
 			}

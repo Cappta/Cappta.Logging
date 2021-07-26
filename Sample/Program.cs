@@ -4,7 +4,6 @@
 
 using Cappta.Logging;
 using Cappta.Logging.Converters;
-using Cappta.Logging.Extensions;
 using Cappta.Logging.Serializer;
 using Cappta.Logging.Services;
 using Microsoft.Extensions.DependencyInjection;

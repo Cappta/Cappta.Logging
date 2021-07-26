@@ -11,12 +11,20 @@ namespace Cappta.Logging {
 		private readonly ILogConverterFactory logConverterFactory;
 		private readonly ILogService logService;
 		private readonly IExternalScopeProvider scopeProvider;
+		private readonly ISecretProvider secretProvider;
 
-		public JsonLogger(string categoryName, ILogConverterFactory logConverterFactory, ILogService logService, IExternalScopeProvider scopeProvider) {
+		public JsonLogger(
+			string categoryName,
+			ILogConverterFactory logConverterFactory,
+			ILogService logService,
+			IExternalScopeProvider scopeProvider,
+			ISecretProvider secretProvider
+		) {
 			this.categoryName = categoryName;
 			this.logConverterFactory = logConverterFactory;
 			this.logService = logService;
 			this.scopeProvider = scopeProvider;
+			this.secretProvider = secretProvider;
 		}
 
 		public IDisposable BeginScope<TState>(TState state)
@@ -25,7 +33,8 @@ namespace Cappta.Logging {
 		public bool IsEnabled(LogLevel logLevel) => true; //Do not block logs from here
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) {
-			var logConverter = this.logConverterFactory.Create();
+			var scopeSecretProvider = new SecretProvider();
+			var logConverter = this.logConverterFactory.Create(scopeSecretProvider);
 
 			var log = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 				{
@@ -44,6 +53,10 @@ namespace Cappta.Logging {
 
 			log.RemoveNullValues();
 			var flatLog = log.Flatten();
+
+			scopeSecretProvider.Protect(flatLog);
+			this.secretProvider.Protect(flatLog);
+
 			this.logService.Log(flatLog);
 		}
 

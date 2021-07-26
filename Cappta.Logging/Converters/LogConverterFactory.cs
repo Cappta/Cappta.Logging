@@ -10,7 +10,7 @@ namespace Cappta.Logging.Converters {
 			this.objectSerializers = objectSerializers;
 		}
 
-		public ILogConverter Create()
-			=> new LogConverter(this.maxDepth, this.objectSerializers);
+		public ILogConverter Create(ISecretProvider secretProvider)
+			=> new LogConverter(this.maxDepth, this.objectSerializers, secretProvider);
 	}
 }
