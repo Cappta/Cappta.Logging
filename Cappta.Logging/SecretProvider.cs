@@ -24,6 +24,7 @@ namespace Cappta.Logging {
 
 		public void Protect(IDictionary<string, object?> dictionary) {
 			var secrets = this.SecretHashDict.Keys;
+			if(secrets.Any() == false) { return; }
 
 			foreach(var key in dictionary.Keys.ToArray()) {
 				var value = dictionary[key];
