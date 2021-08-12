@@ -42,6 +42,10 @@ namespace Cappta.Logging.Services {
 			var response = this.restClient.Execute(request);
 			if(response.IsSuccessful == true) { return; }
 
+			Console.WriteLine(
+@$"Unsuccessfull ElasticSearch Log:
+Request: POST {this.restClient.BuildUri(request)} with ""{json}""
+Response: Status {(int)response.StatusCode} with ""{response.Content ?? response.ErrorMessage}""");
 			throw response.ErrorException ?? new ApiResponseException(response);
 		}
 	}
