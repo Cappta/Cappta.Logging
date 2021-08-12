@@ -6,10 +6,10 @@ using System.Threading;
 
 namespace Cappta.Logging.Services {
 	public class AsyncLogService : ILogService, IDisposable {
-		private const int DEFAULT_SYNC_JOBS = 10;
+		private const int DEFAULT_SYNC_JOBS = 1;
 		private const int DEFAULT_SIZE_LIMIT = 10000;
 
-		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromMilliseconds(100);
+		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromSeconds(1);
 
 		public event Action<int>? Success;
 		public event Action<int, Exception>? Exception;
@@ -39,7 +39,7 @@ namespace Cappta.Logging.Services {
 
 		private void CreateSyncThreads(int syncJobs) {
 			for(var i = 0; i < syncJobs; i++) {
-				var thread = new Thread(this.IndexingThreadFunc);
+				var thread = new Thread(() => { this.IndexingThreadFunc(i); });
 				thread.Name = $"{nameof(AsyncLogService)}({this.logService.GetType().Name}) #{i}"; //this helps identify this thread when debugging
 				thread.IsBackground = true; //this means that the program can close with this thread running
 				thread.Priority = ThreadPriority.Lowest; //Make sure we don't interfere with actual behavior of the application
@@ -58,13 +58,25 @@ namespace Cappta.Logging.Services {
 			this.mainJsonLogQueue.Enqueue(jsonLog);
 		}
 
-		private void IndexingThreadFunc() {
+		private void QueueRetry(JsonLog jsonLog) {
+			if(this.QueueCount > this.QueueCapacity) {
+				Interlocked.Increment(ref this.lostLogCount);
+				return;
+			}
+			this.retryJsonLogQueue.Enqueue(jsonLog);
+		}
+
+		private void IndexingThreadFunc(int index) {
 			try {
 				Interlocked.Increment(ref this.healthyIndexerCount);
 				Interlocked.Increment(ref this.busyIndexerCount);
 				while(this.disposing == false) {
-					var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog)
-						|| this.retryJsonLogQueue.TryDequeue(out jsonLog);
+					var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog);
+					var isRetryLog = false;
+					if(!hasJsonLog && index == 0) {
+						isRetryLog = this.retryJsonLogQueue.TryDequeue(out jsonLog);
+						hasJsonLog = isRetryLog;
+					}
 
 					if(hasJsonLog == false) {
 						Interlocked.Decrement(ref this.busyIndexerCount);
@@ -81,6 +93,12 @@ namespace Cappta.Logging.Services {
 						this.Log(jsonLog);
 
 						try { this.Exception?.Invoke(jsonLog.GetHashCode(), ex); } catch { /* Ignore */ }
+
+						if(isRetryLog) {
+							Interlocked.Decrement(ref this.busyIndexerCount);
+							Thread.Sleep(IDLE_SLEEP_TIME);
+							Interlocked.Increment(ref this.busyIndexerCount);
+						}
 					}
 				}
 			} finally {
