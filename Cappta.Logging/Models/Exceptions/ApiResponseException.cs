@@ -6,14 +6,7 @@ using System.Collections.Generic;
 namespace Cappta.Logging.Models.Exceptions {
 	public class ApiResponseException : Exception, ILogConvertable {
 		public ApiResponseException(IRestResponse restResponse)
-			=> this.Response = restResponse;
-
-		public ApiResponseException(IRestResponse restResponse, string message)
-			: base(message)
-			=> this.Response = restResponse;
-
-		public ApiResponseException(IRestResponse restResponse, string message, Exception innerException)
-			: base(message, innerException)
+			: base($"Received status {(int)restResponse.StatusCode} with \"{restResponse.Content}\"")
 			=> this.Response = restResponse;
 
 		public IRestResponse Response { get; }
