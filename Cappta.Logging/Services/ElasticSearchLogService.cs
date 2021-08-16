@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cappta.Logging.Services {
 	public class ElasticSearchLogService : ILogService, IBatchableLogService {
@@ -52,7 +53,7 @@ namespace Cappta.Logging.Services {
 			throw this.FailedRequest("Unsuccessfull ElasticSearch Log", restRequest, json, restResponse);
 		}
 
-		public void Log(JsonLog[] jsonLogs, Action<JsonLog[]> onLogFailed) {
+		public async Task Log(JsonLog[] jsonLogs, Action<JsonLog[]> onLogFailed) {
 			var requestStringBuilder = new StringBuilder();
 
 			var action = new IndexActionRequest(this.Index);
@@ -69,7 +70,7 @@ namespace Cappta.Logging.Services {
 			var json = requestStringBuilder.ToString();
 			restRequest.AddRawJsonBody(json);
 
-			var restResponse = this.restClient.Execute(restRequest);
+			var restResponse = await this.restClient.ExecuteAsync(restRequest);
 			if(restResponse.IsSuccessful == false) {
 				throw this.FailedRequest("Unsuccessfull ElasticSearch Log", restRequest, json, restResponse);
 			}

@@ -1,12 +1,14 @@
 using Cappta.Logging.Models;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Cappta.Logging.Services {
-	public class AsyncLogService : ILogService, IDisposable {
+	public class AsyncLogService : BackgroundService, ILogService {
 		private const int DEFAULT_SIZE_LIMIT = 10000;
 
 		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromSeconds(1);
@@ -16,29 +18,19 @@ namespace Cappta.Logging.Services {
 		private readonly IBatchableLogService logService;
 
 		private int lostLogCount = 0;
-		private bool disposing = false;
 
 		public AsyncLogService(IBatchableLogService logService, int queueCapacity = DEFAULT_SIZE_LIMIT) {
 			this.logService = logService;
 			this.QueueCapacity = queueCapacity;
-
-			this.CreateSyncThread();
 		}
 
-		public int LostLogCount => this.lostLogCount;
-		public int QueueCapacity { get; }
-		public int QueueCount => this.mainJsonLogQueue.Count + this.RetryQueueCount;
-		public int PendingRetryLogCount { get; private set; }
-		public int RetryQueueCount => this.retryJsonLogQueue.Count;
 		public int BatchSize { get; set; } = 50;
-
-		private void CreateSyncThread() {
-			var thread = new Thread(() => { this.IndexingThreadFunc(); });
-			thread.Name = $"{nameof(AsyncLogService)}({this.logService.GetType().Name})"; //this helps identify this thread when debugging
-			thread.IsBackground = true; //this means that the program can close with this thread running
-			thread.Priority = ThreadPriority.Lowest; //Make sure we don't interfere with actual behavior of the application
-			thread.Start();
-		}
+		public int LostLogCount => this.lostLogCount;
+		public int MainQueueCount => this.mainJsonLogQueue.Count;
+		public int PendingRetryLogCount { get; private set; }
+		public int QueueCapacity { get; }
+		public int QueueCount => this.MainQueueCount + this.RetryQueueCount;
+		public int RetryQueueCount => this.retryJsonLogQueue.Count;
 
 		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
@@ -59,28 +51,43 @@ namespace Cappta.Logging.Services {
 			this.retryJsonLogQueue.Enqueue(jsonLog);
 		}
 
-		private void IndexingThreadFunc() {
-			while(this.disposing == false) {
+		protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
+			while(stoppingToken.IsCancellationRequested is false || this.MainQueueCount > 0) {
 				if(this.QueueCount is 0) {
-					Thread.Sleep(IDLE_SLEEP_TIME);
+					await Task.Delay(IDLE_SLEEP_TIME);
 					continue;
 				}
 
-				var batch = this.EnumerateJsonLogs().Take(this.BatchSize).ToArray();
-				try {
-					this.logService.Log(batch, this.OnLogFailed);
-					this.PendingRetryLogCount = this.RetryQueueCount;
-				} catch {
-					this.OnLogFailed(batch);
-					Thread.Sleep(IDLE_SLEEP_TIME);
-				}
+				await this.UploadBatch(stoppingToken);
+			}
+
+			var lostLogCount = this.RetryQueueCount + this.LostLogCount;
+			if(lostLogCount is 0) {
+				Console.WriteLine("Cappta-Logging: All logs were uploaded");
+			} else {
+				Console.WriteLine($"Cappta-Logging: Lost {lostLogCount} logs");
 			}
 		}
 
-		private IEnumerable<JsonLog> EnumerateJsonLogs() {
+		private async Task UploadBatch(CancellationToken stoppingToken) {
+			var shouldIncludeRetries = stoppingToken.IsCancellationRequested is false;
+			var batch = this.EnumerateJsonLogs(shouldIncludeRetries).Take(this.BatchSize).ToArray();
+			try {
+				await this.logService.Log(batch, this.OnLogFailed);
+				this.PendingRetryLogCount = this.RetryQueueCount;
+			} catch {
+				this.OnLogFailed(batch);
+				await Task.Delay(IDLE_SLEEP_TIME);
+			}
+		}
+
+		private IEnumerable<JsonLog> EnumerateJsonLogs(bool shouldIncludeRetries) {
 			while(true) {
-				var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog)
-					|| this.retryJsonLogQueue.TryDequeue(out jsonLog);
+				var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog);
+
+				if(hasJsonLog is false && shouldIncludeRetries) {
+					hasJsonLog = this.retryJsonLogQueue.TryDequeue(out jsonLog);
+				}
 
 				if(hasJsonLog is false) { yield break; }
 
@@ -93,8 +100,5 @@ namespace Cappta.Logging.Services {
 				this.RetryLog(jsonLog);
 			}
 		}
-
-		public void Dispose()
-			=> this.disposing = true;
 	}
 }

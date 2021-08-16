@@ -1,8 +1,9 @@
 using Cappta.Logging.Models;
 using System;
+using System.Threading.Tasks;
 
 namespace Cappta.Logging.Services {
 	public interface IBatchableLogService {
-		void Log(JsonLog[] jsonLogs, Action<JsonLog[]> onLogFailed);
+		Task Log(JsonLog[] jsonLogs, Action<JsonLog[]> onLogFailed);
 	}
 }
