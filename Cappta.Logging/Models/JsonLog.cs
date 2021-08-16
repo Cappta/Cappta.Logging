@@ -7,9 +7,11 @@ namespace Cappta.Logging.Models {
 		public JsonLog(IDictionary<string, object?> data, DateTimeOffset time) {
 			this.Data = data;
 			this.Time = time;
+			this.Id = Guid.NewGuid().ToString("N");
 		}
 
-		public DateTimeOffset Time { get; set; }
-		public IDictionary<string, object?> Data { get; set; }
+		public DateTimeOffset Time { get; }
+		public IDictionary<string, object?> Data { get; }
+		public string Id { get; }
 	}
 }

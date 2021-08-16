@@ -22,7 +22,7 @@ namespace Cappta.Logging.Health {
 			var asyncLogServiceWatcher = this.serviceProvider.GetService<IAsyncLogServiceWatcher>();
 			if(asyncLogServiceWatcher == null) { return HealthCheckResult.Unhealthy($"{nameof(IAsyncLogServiceWatcher)} has not been registered into IOC"); }
 
-			var pendingRetryCount = asyncLogServiceWatcher.PendingRetryCount;
+			var pendingRetryCount = asyncLogServiceWatcher.PendingRetryLogCount;
 			var queueCount = asyncLogServiceWatcher.QueueCount;
 			var acceptableQueueCount = asyncLogServiceWatcher.QueueCapacity / ACCEPTABLE_QUEUE_COUNT_DIVISOR;
 
@@ -50,14 +50,11 @@ namespace Cappta.Logging.Health {
 			=> new()
 			{
 				{ nameof(acceptableQueueCount).ToPascalCase(), acceptableQueueCount },
-				{ nameof(asyncLogServiceWatcher.BusyIndexerCount), asyncLogServiceWatcher.BusyIndexerCount },
-				{ nameof(asyncLogServiceWatcher.ExceptionMessageCountDictionary), asyncLogServiceWatcher.ExceptionMessageCountDictionary },
-				{ nameof(asyncLogServiceWatcher.HealthyIndexerCount), asyncLogServiceWatcher.HealthyIndexerCount },
 				{ nameof(asyncLogServiceWatcher.LostLogCount), asyncLogServiceWatcher.LostLogCount },
 				{ nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
 				{ nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
 				{ nameof(asyncLogServiceWatcher.RetryQueueCount), asyncLogServiceWatcher.RetryQueueCount },
-				{ nameof(asyncLogServiceWatcher.PendingRetryCount), asyncLogServiceWatcher.PendingRetryCount },
+				{ nameof(asyncLogServiceWatcher.PendingRetryLogCount), asyncLogServiceWatcher.PendingRetryLogCount },
 			};
 	}
 }
