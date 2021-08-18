@@ -52,20 +52,26 @@ namespace Cappta.Logging.Services {
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
-			while(stoppingToken.IsCancellationRequested is false || this.MainQueueCount > 0) {
-				if(this.QueueCount is 0) {
-					await Task.Delay(IDLE_SLEEP_TIME);
-					continue;
+			try {
+				while(stoppingToken.IsCancellationRequested is false || this.MainQueueCount > 0) {
+					if(this.QueueCount is 0) {
+						await Task.Delay(IDLE_SLEEP_TIME);
+						continue;
+					}
+
+					await this.UploadBatch(stoppingToken);
 				}
 
-				await this.UploadBatch(stoppingToken);
-			}
+				var lostLogCount = this.RetryQueueCount + this.LostLogCount;
+				if(lostLogCount is 0) {
+					Console.WriteLine("Cappta-Logging: All logs were uploaded");
+				} else {
+					Console.WriteLine($"Cappta-Logging: Lost {lostLogCount} logs");
+				}
 
-			var lostLogCount = this.RetryQueueCount + this.LostLogCount;
-			if(lostLogCount is 0) {
-				Console.WriteLine("Cappta-Logging: All logs were uploaded");
-			} else {
-				Console.WriteLine($"Cappta-Logging: Lost {lostLogCount} logs");
+			} catch(Exception ex) {
+				Console.WriteLine($"Cappta-Logging: {nameof(AsyncLogService)}:{nameof(ExecuteAsync)} threw an exception: {ex}");
+				await this.ExecuteAsync(stoppingToken);
 			}
 		}
 
