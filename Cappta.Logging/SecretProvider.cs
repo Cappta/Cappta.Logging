@@ -34,6 +34,7 @@ namespace Cappta.Logging {
 					this.Protect(subDict);
 					continue;
 				}
+				if(value is not string) { continue; }
 
 				var valueString = value.ToString();
 				var exposedSecrets = secrets.Where(secret => valueString.ContainsIgnoringCase(secret)).ToArray();
