@@ -41,7 +41,7 @@ namespace Cappta.Logging.Converters {
 				case IEnumerable<KeyValuePair<string, object>> kvpEnumerable:
 					return this.ConvertKvpEnumerable(kvpEnumerable, logSerializer);
 				case ILogConvertable logConvertable:
-					return logConvertable.Convert(logSerializer);
+					return logConvertable.Convert(logSerializer, secretProvider);
 				case MethodInfo methodInfo:
 					return methodInfo.ToString();
 				case string stringValue:

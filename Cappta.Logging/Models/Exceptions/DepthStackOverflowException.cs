@@ -14,7 +14,7 @@ namespace Cappta.Logging.Models.Exceptions {
 		public int MaxDepth { get; }
 		public Type[] TypeStack { get; }
 
-		public object Convert(ILogConverter logSerializer)
+		public object Convert(ILogConverter logSerializer, ISecretProvider secretProvider)
 			=> new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
 				{ nameof(this.Message), this.Message },
 				{ nameof(this.StackTrace), this.StackTrace },
