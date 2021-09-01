@@ -37,6 +37,8 @@ namespace Cappta.Logging {
 				if(value is not string) { continue; }
 
 				var valueString = value.ToString();
+				if(DateTimeOffset.TryParse(valueString, out _)) { continue; }
+
 				var exposedSecrets = secrets.Where(secret => valueString.ContainsIgnoringCase(secret)).ToArray();
 				if(exposedSecrets.Any() == false) { continue; }
 
