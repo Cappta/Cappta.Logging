@@ -26,6 +26,13 @@ namespace Cappta.Logging.Health {
 			var queueCount = asyncLogServiceWatcher.QueueCount;
 			var acceptableQueueCount = asyncLogServiceWatcher.QueueCapacity / ACCEPTABLE_QUEUE_COUNT_DIVISOR;
 
+			if(asyncLogServiceWatcher.ServiceRunning is false) {
+				return HealthCheckResult.Unhealthy(
+					$"Async Indexing Service is not running",
+					data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
+				);
+			}
+
 			if(pendingRetryCount > 0) {
 				return HealthCheckResult.Unhealthy(
 					$"We're failing to index some logs and they may be lost beyond recover",

@@ -31,6 +31,7 @@ namespace Cappta.Logging.Services {
 		public int QueueCapacity { get; }
 		public int QueueCount => this.MainQueueCount + this.RetryQueueCount;
 		public int RetryQueueCount => this.retryJsonLogQueue.Count;
+		public bool ServiceRunning { get; private set; }
 
 		public void Log(IDictionary<string, object?> data)
 			=> this.Log(new JsonLog(data));
@@ -53,6 +54,8 @@ namespace Cappta.Logging.Services {
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
 			try {
+				this.ServiceRunning = true;
+
 				while(stoppingToken.IsCancellationRequested is false || this.MainQueueCount > 0) {
 					if(this.QueueCount is 0) {
 						await Task.Delay(IDLE_SLEEP_TIME);
@@ -68,10 +71,11 @@ namespace Cappta.Logging.Services {
 				} else {
 					Console.WriteLine($"Cappta-Logging: Lost {lostLogCount} logs");
 				}
-
 			} catch(Exception ex) {
 				Console.WriteLine($"Cappta-Logging: {nameof(AsyncLogService)}:{nameof(ExecuteAsync)} threw an exception: {ex}");
 				await this.ExecuteAsync(stoppingToken);
+			} finally {
+				this.ServiceRunning = false;
 			}
 		}
 
