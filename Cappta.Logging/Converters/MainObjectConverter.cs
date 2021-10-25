@@ -1,5 +1,6 @@
 using Cappta.Logging.Extensions;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json.Linq;
 using Npgsql;
 using RestSharp;
 using System;
@@ -34,6 +35,8 @@ namespace Cappta.Logging.Converters {
 					return enumValue;
 				case Guid guid:
 					return guid.ToString();
+				case JToken jToken:
+					return this.ConvertJToken(jToken, logSerializer);
 				case IDictionary<string, object> stringObjectDictionary:
 					return this.ConvertDictionary(stringObjectDictionary, logSerializer);
 				case IDictionary<string, StringValues> stringStringValuesDictionary:
@@ -78,6 +81,38 @@ namespace Cappta.Logging.Converters {
 				default:
 					if(obj.GetType().IsPrimitive) { return obj; }
 					return this.Reflect(obj, logSerializer, secretProvider);
+			}
+		}
+
+		private object? ConvertJToken(JToken token, ILogConverter logSerializer) {
+			switch(token.Type) {
+				case JTokenType.Object:
+					var jObject = token as JObject;
+					var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+					foreach(var jProperty in jObject!.Properties()) {
+						dict.Add(jProperty.Name, logSerializer.ConvertToLogObject(jProperty.Value));
+					}
+					return dict;
+
+				case JTokenType.Array:
+					var jArray = token as JArray;
+					var array = jArray!.ToArray();
+					return logSerializer.ConvertToLogObject(array);
+
+				case JTokenType.Integer:
+					return (long)token;
+
+				case JTokenType.Float:
+					return (decimal)token;
+
+				case JTokenType.Null:
+					return null;
+
+				case JTokenType.Boolean:
+					return (bool)token;
+
+				default:
+					return token.ToString();
 			}
 		}
 
