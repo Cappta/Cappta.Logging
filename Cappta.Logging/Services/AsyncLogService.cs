@@ -12,12 +12,14 @@ namespace Cappta.Logging.Services {
 		private const int DEFAULT_SIZE_LIMIT = 10000;
 
 		private static readonly TimeSpan IDLE_SLEEP_TIME = TimeSpan.FromSeconds(1);
+		private static readonly TimeSpan RETRY_COOLDOWN = TimeSpan.FromMinutes(1);
 
 		private readonly ConcurrentQueue<JsonLog> mainJsonLogQueue = new();
 		private readonly ConcurrentQueue<JsonLog> retryJsonLogQueue = new();
 		private readonly IBatchableLogService logService;
 
 		private int lostLogCount = 0;
+		private DateTimeOffset lastRetryTime = DateTimeOffset.UtcNow;
 
 		public AsyncLogService(IBatchableLogService logService, int queueCapacity = DEFAULT_SIZE_LIMIT) {
 			this.logService = logService;
@@ -80,7 +82,8 @@ namespace Cappta.Logging.Services {
 		}
 
 		private async Task UploadBatch(CancellationToken stoppingToken) {
-			var shouldIncludeRetries = stoppingToken.IsCancellationRequested is false;
+			var shouldIncludeRetries = stoppingToken.IsCancellationRequested is false &&
+				DateTimeOffset.UtcNow - lastRetryTime > RETRY_COOLDOWN;
 			var batch = this.EnumerateJsonLogs(shouldIncludeRetries).Take(this.BatchSize).ToArray();
 			try {
 				await this.logService.Log(batch, this.OnLogFailed);
@@ -96,6 +99,7 @@ namespace Cappta.Logging.Services {
 				var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog);
 
 				if(hasJsonLog is false && shouldIncludeRetries) {
+					lastRetryTime = DateTimeOffset.UtcNow;
 					hasJsonLog = this.retryJsonLogQueue.TryDequeue(out jsonLog);
 				}
 
