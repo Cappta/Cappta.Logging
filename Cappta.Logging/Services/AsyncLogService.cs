@@ -85,6 +85,10 @@ namespace Cappta.Logging.Services {
 			var shouldIncludeRetries = stoppingToken.IsCancellationRequested is false &&
 				DateTimeOffset.UtcNow - lastRetryTime > RETRY_COOLDOWN;
 			var batch = this.EnumerateJsonLogs(shouldIncludeRetries).Take(this.BatchSize).ToArray();
+			if(batch.Any() is false) {
+				await Task.Delay(IDLE_SLEEP_TIME);
+				return;
+			}
 			try {
 				await this.logService.Log(batch, this.OnLogFailed);
 				this.PendingRetryLogCount = this.RetryQueueCount;

@@ -10,10 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sample {
 	class Program {
-		static void Main(string[] args) {
+		static async Task Main(string[] args) {
 #if ElasticSearch
 			var apiLogService = new ElasticSearchLogService(@"http://scorpion-homolog.cappta.com.br:9200", "garbage", new JsonSerializer());
 #elif Splunk
@@ -24,6 +25,8 @@ namespace Sample {
 
 			var asyncLogService = new AsyncLogService(apiLogService);
 			var jsonLoggerProvider = new JsonLoggerProvider(new LogConverterFactory(), asyncLogService);
+
+			await asyncLogService.StartAsync(default);
 
 			var serviceProvider = new ServiceCollection()
 				.AddLogging(loggingBuilder => loggingBuilder.AddProvider(jsonLoggerProvider))
@@ -43,7 +46,7 @@ namespace Sample {
 			var scopedServiceProvider2 = serviceProvider.CreateScope().ServiceProvider;
 			DoSomethingElse(scopedServiceProvider2);
 
-			Thread.Sleep(TimeSpan.FromSeconds(10));
+			await asyncLogService.StopAsync(default);
 		}
 
 		private static void DoSomething(IServiceProvider serviceProvider) {
