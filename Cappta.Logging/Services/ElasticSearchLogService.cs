@@ -100,7 +100,7 @@ namespace Cappta.Logging.Services {
 			Console.WriteLine(
 				@$"{message}:
 Request: POST {this.restClient.BuildUri(restRequest)} with ""{json}""
-Response: Status {(int)restResponse.StatusCode} with ""{restResponse.Content ?? restResponse.ErrorMessage}""");
+Response: Status {(int)restResponse.StatusCode} with Content ""{restResponse.Content}"" and Error ""{restResponse.ErrorMessage}""");
 			return restResponse.ErrorException ?? new ApiResponseException(restResponse);
 		}
 	}
