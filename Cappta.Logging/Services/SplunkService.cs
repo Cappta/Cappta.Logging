@@ -26,12 +26,12 @@ namespace Cappta.Logging.Services {
 		public void Log(IDictionary<string, object?> data) => this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog) {
-			var restRequest = new RestRequest(LOG_ENDPOINT, Method.POST);
+			var restRequest = new RestRequest(LOG_ENDPOINT, Method.Post);
 			restRequest.AddHeader(AUTHORIZATION_HEADER, this.authorizationHeaderValue);
 			var json = this.serializer.Serialize(new SplunkHecRequest(this.Host, jsonLog));
 			restRequest.AddJsonBody(json);
 
-			var response = this.restClient.Execute(restRequest);
+			var response = this.restClient.ExecuteAsync(restRequest).GetAwaiter().GetResult();
 
 			if(response.IsSuccessful == true) { return; }
 

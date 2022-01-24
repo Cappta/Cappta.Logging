@@ -24,13 +24,15 @@ namespace Cappta.Logging.Services {
 		private readonly ISerializer serializer;
 
 		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
-			this.restClient = new RestClient(elasticSearchUri);
+			this.restClient = new RestClient(new RestClientOptions() {
+				Timeout = (int)REQUEST_TIMEOUT.TotalMilliseconds,
+				BaseUrl = new Uri(elasticSearchUri)
+			});
 			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
 
 			this.resource = $"{index}/default";
 			this.Index = index;
 			this.serializer = serializer;
-			this.restClient.Timeout = (int)REQUEST_TIMEOUT.TotalMilliseconds;
 		}
 
 		public string Index { get; }
@@ -39,7 +41,7 @@ namespace Cappta.Logging.Services {
 			=> this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog) {
-			var restRequest = new RestRequest(this.resource, Method.POST);
+			var restRequest = new RestRequest(this.resource, Method.Post);
 
 			var utcLogTime = jsonLog.Time.ToUniversalTime();
 			jsonLog.Data[TIMESTAMP_FIELD] = utcLogTime.ToString(TIME_FORMAT, CultureInfo.InvariantCulture);
@@ -47,7 +49,7 @@ namespace Cappta.Logging.Services {
 			var json = this.serializer.Serialize(jsonLog.Data);
 			restRequest.AddRawJsonBody(json);
 
-			var restResponse = this.restClient.Execute(restRequest);
+			var restResponse = this.restClient.ExecuteAsync(restRequest).GetAwaiter().GetResult();
 			if(restResponse.IsSuccessful == true) { return; }
 
 			throw this.FailedRequest("Unsuccessfull ElasticSearch Log", restRequest, json, restResponse);
@@ -66,7 +68,7 @@ namespace Cappta.Logging.Services {
 				requestStringBuilder.AppendLine(this.serializer.Serialize(jsonLog.Data));
 			}
 
-			var restRequest = new RestRequest("_bulk", Method.POST);
+			var restRequest = new RestRequest("_bulk", Method.Post);
 			var json = requestStringBuilder.ToString();
 			restRequest.AddRawJsonBody(json);
 
@@ -96,7 +98,7 @@ namespace Cappta.Logging.Services {
 			this.FailedRequest("Some logs failed", restRequest, json, restResponse);
 		}
 
-		private Exception FailedRequest(string message, RestRequest restRequest, string json, IRestResponse restResponse) {
+		private Exception FailedRequest(string message, RestRequest restRequest, string json, RestResponse restResponse) {
 			Console.WriteLine(
 				@$"{message}:
 Request: POST {this.restClient.BuildUri(restRequest)} with ""{json}""

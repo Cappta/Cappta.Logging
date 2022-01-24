@@ -3,10 +3,10 @@ using System;
 
 namespace Cappta.Logging.Models.Exceptions {
 	public class ApiResponseException : Exception {
-		public ApiResponseException(IRestResponse restResponse)
+		public ApiResponseException(RestResponse restResponse)
 			: base($"Received status {(int)restResponse.StatusCode} with \"{restResponse.Content}\"")
 			=> this.Response = restResponse;
 
-		public IRestResponse Response { get; }
+		public RestResponse Response { get; }
 	}
 }

@@ -24,12 +24,12 @@ namespace Cappta.Logging.Services {
 		public void Log(IDictionary<string, object?> data) {
 			var camelCaseData = data.ToDictionary(kvp => kvp.Key.ToCamelCase(), kvp => kvp.Value);
 
-			var request = new RestRequest(URN, Method.POST);
+			var request = new RestRequest(URN, Method.Post);
 
 			var json = this.serializer.Serialize(camelCaseData);
 			request.AddRawJsonBody(json);
 
-			var response = this.restClient.Execute(request);
+			var response = this.restClient.ExecuteAsync(request).GetAwaiter().GetResult();
 			if(response.IsSuccessful == true) { return; }
 
 			throw response.ErrorException ?? new ApiResponseException(response);

@@ -72,12 +72,12 @@ namespace Cappta.Logging.Converters {
 					return this.ConvertException(ex, logSerializer);
 				case IEnumerable enumerable:
 					return this.ConvertEnumerable(enumerable, logSerializer);
-				case IRestClient restClient:
-					return this.ConvertIRestClient(restClient);
-				case IRestRequest restRequest:
-					return this.ConvertIRestRequest(restRequest, logSerializer);
-				case IRestResponse restResponse:
-					return this.ConvertIRestResponse(restResponse, logSerializer);
+				case RestClient restClient:
+					return this.ConvertRestClient(restClient);
+				case RestRequest restRequest:
+					return this.ConvertRestRequest(restRequest, logSerializer);
+				case RestResponse restResponse:
+					return this.ConvertRestResponse(restResponse, logSerializer);
 				default:
 					if(obj.GetType().IsPrimitive) { return obj; }
 					return this.Reflect(obj, logSerializer, secretProvider);
@@ -178,13 +178,17 @@ namespace Cappta.Logging.Converters {
 			this.AppendExtendedExceptionProperties(dict, type.BaseType, ex, logSerializer);
 		}
 
-		private object ConvertIRestClient(IRestClient restClient)
-			=> new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
-			{
-				{ "BaseUri", restClient.BaseUrl}
-			};
+		private object ConvertRestClient(RestClient restClient) {
+			var optionsPropertyInfo = typeof(RestClient).GetProperty("Options", BindingFlags.Instance | BindingFlags.NonPublic);
 
-		private object ConvertIRestRequest(IRestRequest restRequest, ILogConverter logSerializer) {
+			var options = optionsPropertyInfo?.GetValue(restClient) as RestClientOptions;
+
+			return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
+				{ "BaseUri", options?.BaseUrl?.ToString() ?? options?.BaseHost}
+			};
+		}
+
+		private object ConvertRestRequest(RestRequest restRequest, ILogConverter logSerializer) {
 			var requestBody = restRequest.Parameters.SingleOrDefault(p => p.Type == ParameterType.RequestBody);
 
 			return new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
@@ -195,7 +199,7 @@ namespace Cappta.Logging.Converters {
 			};
 		}
 
-		private object ConvertIRestResponse(IRestResponse restResponse, ILogConverter logSerializer)
+		private object ConvertRestResponse(RestResponse restResponse, ILogConverter logSerializer)
 			=> new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
 			{
 				{ "Content", restResponse.Content },
