@@ -22,7 +22,7 @@ namespace Cappta.Logging.Health {
 			var asyncLogServiceWatcher = this.serviceProvider.GetService<IAsyncLogServiceWatcher>();
 			if(asyncLogServiceWatcher == null) { return HealthCheckResult.Unhealthy($"{nameof(IAsyncLogServiceWatcher)} has not been registered into IOC"); }
 
-			var pendingRetryCount = asyncLogServiceWatcher.PendingRetryLogCount;
+			var retryQueueCount = asyncLogServiceWatcher.RetryQueueCount;
 			var queueCount = asyncLogServiceWatcher.QueueCount;
 			var acceptableQueueCount = asyncLogServiceWatcher.QueueCapacity / ACCEPTABLE_QUEUE_COUNT_DIVISOR;
 
@@ -33,7 +33,7 @@ namespace Cappta.Logging.Health {
 				);
 			}
 
-			if(pendingRetryCount > 0) {
+			if(retryQueueCount > 0) {
 				return HealthCheckResult.Unhealthy(
 					$"We're failing to index some logs and they may be lost beyond recover",
 					data: this.GetResultData(asyncLogServiceWatcher, acceptableQueueCount)
@@ -61,7 +61,6 @@ namespace Cappta.Logging.Health {
 				{ nameof(asyncLogServiceWatcher.QueueCapacity), asyncLogServiceWatcher.QueueCapacity },
 				{ nameof(asyncLogServiceWatcher.QueueCount), asyncLogServiceWatcher.QueueCount },
 				{ nameof(asyncLogServiceWatcher.RetryQueueCount), asyncLogServiceWatcher.RetryQueueCount },
-				{ nameof(asyncLogServiceWatcher.PendingRetryLogCount), asyncLogServiceWatcher.PendingRetryLogCount },
 			};
 	}
 }

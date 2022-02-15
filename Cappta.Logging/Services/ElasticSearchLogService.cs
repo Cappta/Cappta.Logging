@@ -58,7 +58,7 @@ namespace Cappta.Logging.Services {
 		public async Task Log(JsonLog[] jsonLogs, Action<JsonLog[]> onLogFailed) {
 			var requestStringBuilder = new StringBuilder();
 
-			var action = new IndexActionRequest(this.Index);
+			var action = new IndexActionRequest();
 			foreach(var jsonLog in jsonLogs) {
 				action.Details.Id = jsonLog.Id;
 				requestStringBuilder.AppendLine(this.serializer.Serialize(action));
@@ -68,7 +68,7 @@ namespace Cappta.Logging.Services {
 				requestStringBuilder.AppendLine(this.serializer.Serialize(jsonLog.Data));
 			}
 
-			var restRequest = new RestRequest("_bulk", Method.Post);
+			var restRequest = new RestRequest($"{this.Index}/_bulk", Method.Post);
 			var json = requestStringBuilder.ToString();
 			restRequest.AddRawJsonBody(json);
 

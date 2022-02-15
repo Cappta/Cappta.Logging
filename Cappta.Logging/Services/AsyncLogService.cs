@@ -29,7 +29,6 @@ namespace Cappta.Logging.Services {
 		public int BatchSize { get; set; } = 50;
 		public int LostLogCount => this.lostLogCount;
 		public int MainQueueCount => this.mainJsonLogQueue.Count;
-		public int PendingRetryLogCount { get; private set; }
 		public int QueueCapacity { get; }
 		public int QueueCount => this.MainQueueCount + this.RetryQueueCount;
 		public int RetryQueueCount => this.retryJsonLogQueue.Count;
@@ -91,7 +90,6 @@ namespace Cappta.Logging.Services {
 			}
 			try {
 				await this.logService.Log(batch, this.OnLogFailed);
-				this.PendingRetryLogCount = this.RetryQueueCount;
 			} catch {
 				this.OnLogFailed(batch);
 				await Task.Delay(IDLE_SLEEP_TIME);

@@ -9,7 +9,6 @@ namespace Cappta.Logging.Health {
 		}
 
 		public int LostLogCount => this.asyncLogService.LostLogCount;
-		public int PendingRetryLogCount => this.asyncLogService.PendingRetryLogCount;
 		public int QueueCapacity => this.asyncLogService.QueueCapacity;
 		public int QueueCount => this.asyncLogService.QueueCount;
 		public int RetryQueueCount => this.asyncLogService.RetryQueueCount;
