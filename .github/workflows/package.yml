@@ -19,7 +19,7 @@ jobs:
       
     - name: Get current date
       id: date
-      run: echo "::set-output name=value::$(date +'%Y.%m.%d')"
+      run: echo "::set-output name=value::$(date +'%Y.%-m.%-d')"
       
     - name: Load variables
       env:
