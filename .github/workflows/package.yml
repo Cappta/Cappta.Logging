@@ -1,0 +1,64 @@
+on:
+  workflow_dispatch:
+  push:
+
+name: Build, Pack and Push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: Install DotNet 6.x
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+      
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=value::$(date +'%Y.%m.%d')"
+      
+    - name: Load variables
+      env:
+        CONFIGURATION: ${{(github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && 'Release' || 'Debug' }}
+        NUGET_PASS: ${{ secrets.PACKAGES_TOKEN }}
+        REPOSITORY_NAME: ${{ github.event.repository.name }}
+        REPOSITORY_URI: ${{ format('{0}/{1}', github.server_url, github.repository) }}
+      run: |
+        echo "CONFIGURATION="$(echo $CONFIGURATION)"" >> $GITHUB_ENV
+        echo "NUGET_PASS="$(echo $NUGET_PASS)"" >> $GITHUB_ENV
+        echo "REPOSITORY_NAME="$(echo $REPOSITORY_NAME)"" >> $GITHUB_ENV
+        echo "REPOSITORY_URI="$(echo $REPOSITORY_URI)"" >> $GITHUB_ENV
+      
+    - name: Load Version
+      env:
+        VERSION: ${{ format('{0}.{1}{2}', steps.date.outputs.value, github.run_number, (env.CONFIGURATION != 'Release') && '-wip' || '') }}
+      run: |
+        echo "VERSION="$(echo $VERSION)"" >> $GITHUB_ENV
+      
+    - name: Install dotnet format
+      run: dotnet tool install -g dotnet-format
+      
+    - name: Add Nuget Source
+      env:
+        NUGER_USER: "Cappta"
+        NUGET_SOURCE: "https://nuget.pkg.github.com/Cappta/index.json"
+      run: dotnet nuget add source $NUGET_SOURCE -n GitHub -u $NUGER_USER -p $NUGET_PASS --store-password-in-clear-text
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c $CONFIGURATION --no-restore -p:RepositoryUrl=$REPOSITORY_URI -p:PackageVersion=$VERSION
+
+    - name: Check format
+      run: dotnet format --verify-no-changes
+
+    - name: Pack
+      run: dotnet pack --output $RUNNER_TEMP --include-symbols --include-source --no-build
+
+    - name: Push
+      run: dotnet nuget push $RUNNER_TEMP/$REPOSITORY_NAME.$VERSION.nupkg -s GitHub --api-key $NUGET_PASS
