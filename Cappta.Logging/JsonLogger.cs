@@ -32,7 +32,7 @@ namespace Cappta.Logging {
 
 		public bool IsEnabled(LogLevel logLevel) => true; //Do not block logs from here
 
-		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) {
+		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
 			var scopeSecretProvider = new SecretProvider();
 			var logConverter = this.logConverterFactory.Create(scopeSecretProvider);
 
@@ -60,7 +60,7 @@ namespace Cappta.Logging {
 			this.logService.Log(flatLog);
 		}
 
-		private void MergeScopes(ILogConverter logConverter, object scope, IDictionary<string, object?> dict)
+		private void MergeScopes(ILogConverter logConverter, object? scope, IDictionary<string, object?> dict)
 			=> dict.MergeWith(this.ObjectToDict(logConverter, scope));
 
 		private IDictionary<string, object?> ObjectToDict(ILogConverter logConverter, object? obj) {
