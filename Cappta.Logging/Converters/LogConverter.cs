@@ -1,6 +1,7 @@
 using Cappta.Logging.Models.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cappta.Logging.Converters {
 	public class LogConverter : ILogConverter {
@@ -25,7 +26,7 @@ namespace Cappta.Logging.Converters {
 			try {
 				this.typeStack.Push(obj.GetType());
 
-				if(this.typeStack.Count > this.maxDepth) { throw new DepthStackOverflowException(this.maxDepth, this.typeStack.ToArray()); }
+				if(this.typeStack.Count > this.maxDepth) { throw new DepthStackOverflowException(this.maxDepth, this.typeStack.Reverse().ToArray()); }
 
 				foreach(var objectSerializer in this.objectSerializers) {
 					obj = objectSerializer.Convert(obj, this, this.secretProvider);

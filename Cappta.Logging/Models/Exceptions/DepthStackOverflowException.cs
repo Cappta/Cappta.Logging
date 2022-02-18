@@ -27,7 +27,7 @@ namespace Cappta.Logging.Models.Exceptions {
 		private object GetTypeStackLogObject()
 			=> string.Join(
 				Environment.NewLine,
-				this.TypeStack.Reverse().Select((type, i) => $"#{i} - {type.FullName}")
+				this.TypeStack.Select((type, i) => $"#{i} - {type.FullName}")
 			);
 	}
 }
