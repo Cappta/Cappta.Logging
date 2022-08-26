@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Cappta.Logging.Services {
 	public class ElasticSearchLogService : ILogService, IBatchableLogService {
@@ -20,7 +21,6 @@ namespace Cappta.Logging.Services {
 		private static readonly TimeSpan REQUEST_TIMEOUT = TimeSpan.FromSeconds(10);
 
 		private readonly RestClient restClient;
-		private readonly string resource;
 		private readonly ISerializer serializer;
 
 		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
@@ -30,8 +30,7 @@ namespace Cappta.Logging.Services {
 			});
 			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
 
-			this.resource = $"{index}/default";
-			this.Index = index;
+			this.Index = HttpUtility.UrlEncode(index);
 			this.serializer = serializer;
 		}
 
@@ -41,7 +40,7 @@ namespace Cappta.Logging.Services {
 			=> this.Log(new JsonLog(data));
 
 		public void Log(JsonLog jsonLog) {
-			var restRequest = new RestRequest(this.resource, Method.Post);
+			var restRequest = new RestRequest($"{this.Index}/default", Method.Post);
 
 			var utcLogTime = jsonLog.Time.ToUniversalTime();
 			jsonLog.Data[TIMESTAMP_FIELD] = utcLogTime.ToString(TIME_FORMAT, CultureInfo.InvariantCulture);
