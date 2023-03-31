@@ -25,7 +25,7 @@ namespace Cappta.Logging.Services {
 
 		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
 			this.restClient = new RestClient(new RestClientOptions() {
-				Timeout = (int)REQUEST_TIMEOUT.TotalMilliseconds,
+				MaxTimeout = (int)REQUEST_TIMEOUT.TotalMilliseconds,
 				BaseUrl = new Uri(elasticSearchUri)
 			});
 			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
@@ -100,7 +100,7 @@ namespace Cappta.Logging.Services {
 		private Exception FailedRequest(string message, RestRequest restRequest, string json, RestResponse restResponse) {
 			Console.WriteLine(
 				@$"{message}:
-Request: POST {this.restClient.BuildUri(restRequest)} with ""{json}""
+Request: POST {restClient.Options.BaseUrl + restRequest.Resource} with ""{json}""
 Response: Status {(int)restResponse.StatusCode} with Content ""{restResponse.Content}"" and Error ""{restResponse.ErrorMessage}""");
 			return restResponse.ErrorException ?? new ApiResponseException(restResponse);
 		}
