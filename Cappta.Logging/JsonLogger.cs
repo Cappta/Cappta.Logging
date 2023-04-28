@@ -27,7 +27,7 @@ namespace Cappta.Logging {
 			this.secretProvider = secretProvider;
 		}
 
-		public IDisposable BeginScope<TState>(TState state)
+		public IDisposable? BeginScope<TState>(TState state) where TState : notnull
 			=> this.scopeProvider.Push(state);
 
 		public bool IsEnabled(LogLevel logLevel) => true; //Do not block logs from here
