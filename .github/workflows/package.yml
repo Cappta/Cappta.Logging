@@ -12,10 +12,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       
-    - name: Install DotNet 6.x
+    - name: Install DotNet 7.x
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+        dotnet-version: '7.x' # SDK Version to use; x will use the latest version of the 3.1 channel
       
     - name: Get current date
       id: date
@@ -24,7 +24,7 @@ jobs:
     - name: Load variables
       env:
         CONFIGURATION: ${{(github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && 'Release' || 'Debug' }}
-        NUGET_PASS: ${{ secrets.PACKAGES_TOKEN }}
+        NUGET_PASS: ${{ secrets.NUGET_ORG_TOKEN }}
         REPOSITORY_NAME: ${{ github.event.repository.name }}
         REPOSITORY_URI: ${{ format('{0}/{1}', github.server_url, github.repository) }}
       run: |
@@ -41,24 +41,18 @@ jobs:
       
     - name: Install dotnet format
       run: dotnet tool install -g dotnet-format
-      
-    - name: Add Nuget Source
-      env:
-        NUGER_USER: "Cappta"
-        NUGET_SOURCE: "https://nuget.pkg.github.com/Cappta/index.json"
-      run: dotnet nuget add source $NUGET_SOURCE -n GitHub -u $NUGER_USER -p $NUGET_PASS --store-password-in-clear-text
 
     - name: Restore
       run: dotnet restore
 
     - name: Build
-      run: dotnet build -c $CONFIGURATION --no-restore -p:RepositoryUrl=$REPOSITORY_URI -p:PackageVersion=$VERSION
+      run: dotnet build -c $CONFIGURATION --no-restore
 
     - name: Check format
       run: dotnet format --verify-no-changes
 
     - name: Pack
-      run: dotnet pack --output $RUNNER_TEMP --include-symbols --include-source --no-build
+      run: dotnet pack --output $RUNNER_TEMP --include-symbols --include-source --no-build -p:RepositoryUrl=$REPOSITORY_URI -p:PackageProjectUrl=$REPOSITORY_URI -p:Company=Cappta -p:Authors=Cappta -p:PackageLicenseExpression=MIT -p:RepositoryType=git -p:PackageVersion=$VERSION -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PublishRepositoryUrl=true -p:EmbedUntrackedSources=true
 
     - name: Push
-      run: dotnet nuget push $RUNNER_TEMP/$REPOSITORY_NAME.$VERSION.nupkg -s GitHub --api-key $NUGET_PASS
+      run: dotnet nuget push $RUNNER_TEMP/$REPOSITORY_NAME.$VERSION.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_PASS
