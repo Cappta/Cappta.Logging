@@ -2,12 +2,28 @@ using Cappta.Logging.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Cappta.Logging {
 	public class SecretProvider : ISecretProvider {
+		public static SecretProvider Current {
+			get {
+				var activity = Activity.Current;
+				if(activity is null) { return new(); }
+
+				const string propertyKey = "__ActivitySecretProvider__";
+				var secretProvider = activity.GetCustomProperty(propertyKey) as SecretProvider;
+				if(secretProvider is not null) { return secretProvider; }
+
+				secretProvider = new();
+				activity.SetCustomProperty(propertyKey, secretProvider);
+				return secretProvider;
+			}
+		}
+
 		private ConcurrentDictionary<string, string> SecretHashDict = new();
 
 		public string Protect(string value) {

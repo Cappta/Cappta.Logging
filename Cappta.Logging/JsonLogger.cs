@@ -33,7 +33,7 @@ namespace Cappta.Logging {
 		public bool IsEnabled(LogLevel logLevel) => true; //Do not block logs from here
 
 		public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
-			var scopeSecretProvider = new SecretProvider();
+			var scopeSecretProvider = SecretProvider.Current;
 			var logConverter = this.logConverterFactory.Create(scopeSecretProvider);
 
 			var log = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
