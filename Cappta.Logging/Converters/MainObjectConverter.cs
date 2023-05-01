@@ -1,4 +1,5 @@
 using Cappta.Logging.Extensions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 using Npgsql;
@@ -37,6 +38,8 @@ namespace Cappta.Logging.Converters {
 					return guid.ToString();
 				case JToken jToken:
 					return this.ConvertJToken(jToken, logSerializer);
+				case IHeaderDictionary headerDictionary:
+					return this.ConvertHeaderDictionary(headerDictionary, secretProvider);
 				case IDictionary<string, object> stringObjectDictionary:
 					return this.ConvertDictionary(stringObjectDictionary, logSerializer);
 				case IDictionary<string, StringValues> stringStringValuesDictionary:
@@ -133,6 +136,20 @@ namespace Cappta.Logging.Converters {
 			};
 			for(var i = 1; i < aggregateException.InnerExceptions.Count; i++) {
 				dict.Add($"InnerException{i + 1}", logSerializer.ConvertToLogObject(aggregateException.InnerExceptions[i]));
+			}
+			return dict;
+		}
+
+		private static readonly string[] SENSITIVE_HEADERS = new[] { "authorization" };
+		private object ConvertHeaderDictionary(IHeaderDictionary headerDictionary, ISecretProvider secretProvider) {
+			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+			foreach(var kvp in headerDictionary) {
+				var key = kvp.Key;
+				var isSensitive = SENSITIVE_HEADERS.Contains(key.ToLower());
+				foreach(var value in kvp.Value) {
+					if(value is null) { continue; }
+					dict.ForceAdd(key, isSensitive ? secretProvider.Protect(value) : value);
+				}
 			}
 			return dict;
 		}
