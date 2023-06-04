@@ -74,7 +74,7 @@ namespace Cappta.Logging.Converters {
 				case Exception ex:
 					return this.ConvertException(ex, logSerializer);
 				case IEnumerable enumerable:
-					return this.ConvertEnumerable(enumerable, logSerializer);
+					return enumerable;
 				case RestClient restClient:
 					return this.ConvertRestClient(restClient);
 				case RestRequest restRequest:
@@ -166,12 +166,6 @@ namespace Cappta.Logging.Converters {
 				}
 			}
 			return dict;
-		}
-
-		private object ConvertEnumerable(IEnumerable enumerable, ILogConverter logSerializer) {
-			var objects = enumerable.Cast<object>();
-			var logObjects = objects.Select((obj, index) => (obj: logSerializer.ConvertToLogObject(obj), index));
-			return logObjects.ToDictionary(tuple => tuple.index.ToString(), tuple => tuple.obj);
 		}
 
 		private object ConvertException(Exception ex, ILogConverter logSerializer) {
