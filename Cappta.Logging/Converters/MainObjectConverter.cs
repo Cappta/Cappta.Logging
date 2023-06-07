@@ -52,6 +52,8 @@ namespace Cappta.Logging.Converters {
 					return methodInfo.ToString();
 				case string stringValue:
 					return stringValue;
+				case decimal decimalValue:
+					return decimalValue;
 				case Thread thread:
 					return this.ConvertThread(thread);
 				case TimeSpan timeSpan:
