@@ -90,7 +90,8 @@ namespace Cappta.Logging.Services {
 			}
 			try {
 				await this.logService.Log(batch, this.OnLogFailed);
-			} catch {
+			} catch(Exception ex) {
+				Console.WriteLine($"Cappta-Logging: {nameof(AsyncLogService)}:{nameof(UploadBatch)} caught an exception: {ex}");
 				this.OnLogFailed(batch);
 				await Task.Delay(IDLE_SLEEP_TIME);
 			}

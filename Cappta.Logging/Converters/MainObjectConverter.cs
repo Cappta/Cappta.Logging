@@ -74,9 +74,9 @@ namespace Cappta.Logging.Converters {
 				case AggregateException aggregateException:
 					return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex:
-					return this.ConvertException(ex, logSerializer);
+					return this.ConvertException(ex);
 				case IEnumerable enumerable:
-					return enumerable;
+					return this.ConvertEnumerable(enumerable, logSerializer).ToArray();
 				case RestClient restClient:
 					return this.ConvertRestClient(restClient);
 				case RestRequest restRequest:
@@ -170,25 +170,22 @@ namespace Cappta.Logging.Converters {
 			return dict;
 		}
 
-		private object ConvertException(Exception ex, ILogConverter logSerializer) {
+		private object ConvertException(Exception ex) {
 			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
 				{ "Message", ex.Message },
 				{ "StackTrace", ex.StackTrace },
 				{ "Type", ex.GetType().FullName },
-				{ "InnerException", logSerializer.ConvertToLogObject(ex.InnerException) },
+				{ "Json", ex.ToJson() },
 			};
-			this.AppendExtendedExceptionProperties(dict, ex.GetType(), ex, logSerializer);
 			return dict;
 		}
 
-		private void AppendExtendedExceptionProperties(IDictionary<string, object?> dict, Type type, Exception ex, ILogConverter logSerializer) {
-			if(type == typeof(Exception)) { return; }
+		private IEnumerable<object?> ConvertEnumerable(IEnumerable enumerable, ILogConverter logSerializer) {
+			var enumerator = enumerable.GetEnumerator();
 
-			foreach(var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.DeclaredOnly)) {
-				dict.ForceAdd(prop.Name, logSerializer.ConvertToLogObject(prop.GetValue(ex)));
+			while(enumerator.MoveNext()) {
+				yield return logSerializer.ConvertToLogObject(enumerator.Current);
 			}
-
-			this.AppendExtendedExceptionProperties(dict, type.BaseType, ex, logSerializer);
 		}
 
 		private object ConvertRestClient(RestClient restClient) {

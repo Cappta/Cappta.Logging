@@ -22,9 +22,8 @@ namespace Cappta.Logging.Services {
 
 		private readonly RestClient restClient;
 		private readonly ISerializer serializer;
-		private readonly Action<RestRequest, RestResponse>? requestFailureAction;
 
-		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null, Action<RestRequest, RestResponse>? requestFailureAction = null) {
+		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
 			this.restClient = new RestClient(new RestClientOptions() {
 				MaxTimeout = (int)REQUEST_TIMEOUT.TotalMilliseconds,
 				BaseUrl = new Uri(elasticSearchUri)
@@ -33,7 +32,6 @@ namespace Cappta.Logging.Services {
 
 			this.Index = HttpUtility.UrlEncode(index);
 			this.serializer = serializer;
-			this.requestFailureAction = requestFailureAction;
 		}
 
 		public string Index { get; }
@@ -102,9 +100,6 @@ namespace Cappta.Logging.Services {
 				@$"{message}:
 Request: POST {this.restClient.BuildUri(restRequest)} with ""{json}""
 Response: Status {(int)restResponse.StatusCode} with Content ""{restResponse.Content}"" and Error ""{restResponse.ErrorMessage}""");
-			if(this.requestFailureAction is not null) {
-				this.requestFailureAction(restRequest, restResponse);
-			}
 			return restResponse.ErrorException ?? new ApiResponseException(restResponse);
 		}
 	}

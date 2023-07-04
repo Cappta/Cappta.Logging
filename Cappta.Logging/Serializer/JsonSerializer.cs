@@ -1,3 +1,4 @@
+using Cappta.Logging.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Collections.Generic;
@@ -10,11 +11,12 @@ namespace Cappta.Logging.Serializer {
 				Converters = new List<JsonConverter>() { new StringEnumConverter() },
 				Culture = CultureInfo.InvariantCulture,
 				NullValueHandling = NullValueHandling.Ignore,
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 			};
 
 		public JsonSerializerSettings JsonSerializerSettings { get; set; }
 
 		public virtual string Serialize(object obj)
-			=> JsonConvert.SerializeObject(obj, this.JsonSerializerSettings);
+			=> obj.ToJson(this.JsonSerializerSettings);
 	}
 }

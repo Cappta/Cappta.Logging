@@ -9,6 +9,7 @@ namespace Cappta.Logging.Converters {
 		private readonly int maxDepth;
 		private readonly ISecretProvider secretProvider;
 		private readonly Stack<Type> typeStack = new();
+		private readonly Stack<object> objectStack = new();
 
 		public LogConverter(
 			int maxDepth,
@@ -17,14 +18,15 @@ namespace Cappta.Logging.Converters {
 		) {
 			this.maxDepth = maxDepth;
 			this.secretProvider = secretProvider;
-			this.objectSerializers.Add(MainObjectConverter.Instance);
 			this.objectSerializers.AddRange(objectSerializers);
+			this.objectSerializers.Add(MainObjectConverter.Instance);
 		}
 
 		public object? ConvertToLogObject(object? obj) {
-			if(obj is null) { return null; }
+			if(obj is null || this.objectStack.Contains(obj)) { return null; }
 			try {
 				this.typeStack.Push(obj.GetType());
+				this.objectStack.Push(obj);
 
 				if(this.typeStack.Count > this.maxDepth) { throw new DepthStackOverflowException(this.maxDepth, this.typeStack.Reverse().ToArray()); }
 
@@ -32,7 +34,7 @@ namespace Cappta.Logging.Converters {
 					obj = objectSerializer.Convert(obj, this, this.secretProvider);
 				}
 				return obj;
-			} finally { this.typeStack.Pop(); }
+			} finally { this.typeStack.Pop(); this.objectStack.Pop(); }
 		}
 	}
 }
