@@ -78,10 +78,8 @@ namespace Cappta.Logging.Services {
 				throw this.FailedRequest("Unsuccessfull ElasticSearch Log", restRequest, json, restResponse);
 			}
 
-			var response = JsonConvert.DeserializeObject<BulkResponse>(restResponse.Content!);
-			if(response is null) {
-				throw this.FailedRequest($"Could not deserialize {nameof(BulkResponse)}", restRequest, json, restResponse);
-			}
+			var response = JsonConvert.DeserializeObject<BulkResponse>(restResponse.Content!)
+				?? throw this.FailedRequest($"Could not deserialize {nameof(BulkResponse)}", restRequest, json, restResponse);
 
 			if(response.HasErrors is false) { return; }
 
