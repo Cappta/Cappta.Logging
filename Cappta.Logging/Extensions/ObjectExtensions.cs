@@ -10,6 +10,7 @@ namespace Cappta.Logging.Extensions {
 			Culture = CultureInfo.InvariantCulture,
 			NullValueHandling = NullValueHandling.Ignore,
 			ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+			Formatting = Formatting.Indented,
 		};
 
 		public static string ToJson(this object value) {

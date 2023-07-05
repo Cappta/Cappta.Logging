@@ -69,10 +69,6 @@ namespace Cappta.Logging.Converters {
 				case NpgsqlParameter npgsqlParameter:
 					return this.ConvertNpgsqlParameter(npgsqlParameter, logSerializer);
 
-				case TaskCanceledException taskCanceledException:
-					return this.ConvertTaskCanceledException(taskCanceledException, logSerializer);
-				case AggregateException aggregateException:
-					return this.ConvertAggregateException(aggregateException, logSerializer);
 				case Exception ex:
 					return this.ConvertException(ex);
 				case IEnumerable enumerable:
@@ -119,27 +115,6 @@ namespace Cappta.Logging.Converters {
 				default:
 					return token.ToString();
 			}
-		}
-
-		private object ConvertTaskCanceledException(TaskCanceledException taskCanceledException, ILogConverter logSerializer) {
-			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
-				{ "StackTrace", taskCanceledException.StackTrace },
-				{ "Type", taskCanceledException.GetType().FullName },
-				{ "InnerException", logSerializer.ConvertToLogObject(taskCanceledException.InnerException) },
-			};
-			return dict;
-		}
-
-		private object ConvertAggregateException(AggregateException aggregateException, ILogConverter logSerializer) {
-			var dict = new SortedDictionary<string, object?>(StringComparer.OrdinalIgnoreCase) {
-				{ "StackTrace", aggregateException.StackTrace },
-				{ "Type", aggregateException.GetType().FullName },
-				{ "InnerException", logSerializer.ConvertToLogObject(aggregateException.InnerException) },
-			};
-			for(var i = 1; i < aggregateException.InnerExceptions.Count; i++) {
-				dict.Add($"InnerException{i + 1}", logSerializer.ConvertToLogObject(aggregateException.InnerExceptions[i]));
-			}
-			return dict;
 		}
 
 		private static readonly string[] SENSITIVE_HEADERS = new[] { "authorization" };
