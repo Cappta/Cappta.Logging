@@ -27,6 +27,8 @@ namespace Cappta.Logging {
 		private ConcurrentDictionary<string, string> SecretHashDict = new();
 
 		public string Protect(string value) {
+			if(string.IsNullOrWhiteSpace(value)) { return value; }
+
 			return this.SecretHashDict.GetOrAdd(value, this.ComputeHash);
 		}
 
@@ -55,7 +57,7 @@ namespace Cappta.Logging {
 				var valueString = value.ToString();
 				if(DateTimeOffset.TryParse(valueString, out _)) { continue; }
 
-				var exposedSecrets = secrets.Where(secret => valueString.ContainsIgnoringCase(secret)).ToArray();
+				var exposedSecrets = secrets.Where(valueString.ContainsIgnoringCase).ToArray();
 				if(exposedSecrets.Any() == false) { continue; }
 
 				var protectedStringBuilder = new StringBuilder(valueString);
