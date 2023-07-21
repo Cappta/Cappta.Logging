@@ -46,6 +46,7 @@ namespace Cappta.Logging.Services {
 		}
 
 		private void RetryLog(JsonLog jsonLog) {
+			lastRetryTime = DateTimeOffset.UtcNow;
 			if(this.QueueCount > this.QueueCapacity) {
 				Interlocked.Increment(ref this.lostLogCount);
 				return;
@@ -102,7 +103,6 @@ namespace Cappta.Logging.Services {
 				var hasJsonLog = this.mainJsonLogQueue.TryDequeue(out var jsonLog);
 
 				if(hasJsonLog is false && shouldIncludeRetries) {
-					lastRetryTime = DateTimeOffset.UtcNow;
 					hasJsonLog = this.retryJsonLogQueue.TryDequeue(out jsonLog);
 				}
 
