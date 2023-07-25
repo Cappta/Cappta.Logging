@@ -18,7 +18,7 @@ namespace Cappta.Logging.Services {
 		private const string TIMESTAMP_FIELD = "@timestamp";
 		private const string TIME_FORMAT = @"yyyy-MM-ddTHH:mm:ss.fffZ";
 
-		private static readonly TimeSpan REQUEST_TIMEOUT = TimeSpan.FromSeconds(10);
+		private static readonly TimeSpan REQUEST_TIMEOUT = TimeSpan.FromSeconds(90);
 
 		private readonly RestClient restClient;
 		private readonly ISerializer serializer;
