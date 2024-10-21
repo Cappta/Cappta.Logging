@@ -25,7 +25,7 @@ namespace Cappta.Logging.Services {
 
 		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
 			this.restClient = new RestClient(new RestClientOptions() {
-				MaxTimeout = (int)REQUEST_TIMEOUT.TotalMilliseconds,
+				Timeout = REQUEST_TIMEOUT,
 				BaseUrl = new Uri(elasticSearchUri)
 			});
 			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
