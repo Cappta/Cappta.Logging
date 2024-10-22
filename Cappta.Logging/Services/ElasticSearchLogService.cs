@@ -23,12 +23,12 @@ namespace Cappta.Logging.Services {
 		private readonly RestClient restClient;
 		private readonly ISerializer serializer;
 
-		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null) {
+		public ElasticSearchLogService(string elasticSearchUri, string index, ISerializer serializer, string? token = null, string? apiKey = null) {
 			this.restClient = new RestClient(new RestClientOptions() {
-				MaxTimeout = (int)REQUEST_TIMEOUT.TotalMilliseconds,
+				Timeout = REQUEST_TIMEOUT,
 				BaseUrl = new Uri(elasticSearchUri)
 			});
-			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
+			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); } else if(string.IsNullOrEmpty(apiKey) == false) { this.restClient.AddDefaultHeader("Authorization", $"ApiKey {apiKey}"); }
 
 			this.Index = HttpUtility.UrlEncode(index);
 			this.serializer = serializer;
