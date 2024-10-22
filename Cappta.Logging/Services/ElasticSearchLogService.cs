@@ -28,8 +28,7 @@ namespace Cappta.Logging.Services {
 				Timeout = REQUEST_TIMEOUT,
 				BaseUrl = new Uri(elasticSearchUri)
 			});
-			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); }
-			else if(string.IsNullOrEmpty(apiKey) == false) { this.restClient.AddDefaultHeader("Authorization", $"ApiKey {apiKey}"); }
+			if(string.IsNullOrEmpty(token) == false) { this.restClient.AddDefaultHeader("Authorization", $"Basic {token}"); } else if(string.IsNullOrEmpty(apiKey) == false) { this.restClient.AddDefaultHeader("Authorization", $"ApiKey {apiKey}"); }
 
 			this.Index = HttpUtility.UrlEncode(index);
 			this.serializer = serializer;
