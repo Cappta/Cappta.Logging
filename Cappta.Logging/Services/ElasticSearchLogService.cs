@@ -47,6 +47,7 @@ namespace Cappta.Logging.Services {
 
 			var json = this.serializer.Serialize(jsonLog.Data);
 			restRequest.AddRawJsonBody(json);
+			Console.WriteLine(json);
 
 			var restResponse = this.restClient.ExecuteAsync(restRequest).GetAwaiter().GetResult();
 			if(restResponse.IsSuccessful == true) { return; }
@@ -70,6 +71,7 @@ namespace Cappta.Logging.Services {
 			var restRequest = new RestRequest($"{this.Index}/_bulk", Method.Post);
 			var json = requestStringBuilder.ToString();
 			restRequest.AddStringBody(json, DataFormat.Json);
+			Console.WriteLine(json);
 
 			var restResponse = await this.restClient.ExecuteAsync(restRequest);
 			if(restResponse.IsSuccessful == false) {
