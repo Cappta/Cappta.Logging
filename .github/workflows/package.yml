@@ -42,6 +42,12 @@ jobs:
     - name: Install dotnet format
       run: dotnet tool install -g dotnet-format
 
+    - name: Add Nuget Source
+      env:
+        NUGER_USER: "Cappta"
+        NUGET_SOURCE: "https://nuget.pkg.github.com/Cappta/index.json"
+      run: dotnet nuget add source $NUGET_SOURCE -n GitHub -u $NUGER_USER -p $NUGET_PASS --store-password-in-clear-text
+
     - name: Restore
       run: dotnet restore
 
@@ -55,4 +61,4 @@ jobs:
       run: dotnet pack --output $RUNNER_TEMP --include-symbols --include-source --no-build -p:RepositoryUrl=$REPOSITORY_URI -p:PackageProjectUrl=$REPOSITORY_URI -p:Company=Cappta -p:Authors=Cappta -p:PackageLicenseExpression=MIT -p:RepositoryType=git -p:PackageVersion=$VERSION -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg -p:PublishRepositoryUrl=true -p:EmbedUntrackedSources=true
 
     - name: Push
-      run: dotnet nuget push $RUNNER_TEMP/$REPOSITORY_NAME.$VERSION.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_PASS
+      run: dotnet nuget push $RUNNER_TEMP/$REPOSITORY_NAME.$VERSION.nupkg -s GitHub --api-key $NUGET_PASS
